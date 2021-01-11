@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IMPACTS Dashboard (Day 2)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="./includes/css/main.css">
+
+  <!-- External Scripts -->
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+
+  <!-- GSA-sanctioned Google Analytics -->
+  <script type="text/javascript" async="true" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=DOC&subagency=SPC&pua=UA-52727918-1"></script>
+
+</head>
+
+<body>
+    <div id='contentwrapper' class='container-fluid'>
+
+        <nav id="topbar" class="navbar navbar-dark bg-dark">
+            
+            <div class="navbar-nav flex-row mr-auto">
+            <a class="navbar-brand" href="#">
+                <img src="./includes/imgs/NOAA_trans.png" width="30" height="30" alt="">
+            </a>
+            <a class="navbar-brand" href="#">
+                <img src="./includes/imgs/spclogo_trans.png" width="30" alt="">
+            </a>
+            <div class="navbar-brand" href="#">IMPACTS Dashboard (Day 2)</div>
+            </div>
+            <span class="navbar-text">Storm Prediction Center, Norman OK</span>
+        </nav>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light" id="mainNav">
+            <div style='width: 100%'>
+              <!-- <div class="navbar-brand">Options</div> -->
+              <button class="navbar-toggler navbar-toggler-right my-1" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                <span>Data/Plot Controls</span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarResponsive">
+                
+                <ul class="navbar-nav mx-auto">
+                  <li class='nav-item py-1 px-lg-2'>
+                    <div class="optionbox">
+                        <span class="style5">Map Display</span><br/>
+                        <input type="radio" name="tordio" id="tordio" value="tor" checked/>
+                        <label for="tordio">SPC Tor Probs</label>
+                        <input type="radio" name="tordio" id="impadio" value="imp" />
+                        <label for="impadio">Impact Map</label>
+                        <!-- <span class="style5">SPC Tornado Probability Forcast</span>
+                        <input id='tordio' type='checkbox' value='tor'> -->
+                    </div>
+                </li>
+                <li class='nav-item py-1 px-lg-2'>
+                    <div class="optionbox" id="map-fill">
+                        <span class="style5">Impact Map Fill</span><br/>
+                        <select id="perc">
+                            <option value="min">Minimum</option>
+                            <option value="ten">10th Percentile</option>
+                            <option value="med" selected>Median</option>
+                            <option value="ninety">90th Percentile</option>
+                            <option value="max">Maximum</option>
+                            <!-- <option value="co">County</option> -->
+                        </select>
+                    </div>
+                </li>
+                  <li class='nav-item py-1 px-lg-2'>
+                    <div class="optionbox" id="map-underlay">
+                      <span class="style5">Impact</span>
+                      <br />
+                        <select id="prod">
+                            <!-- <option value="tor">SPC Tor Prob</option> -->
+                            <option value="hosp">Hospitals</option>
+                            <option value="mob">Mobile Homes</option>
+                            <option value="pow">Power Substations</option>
+                            <option value="pop">Population</option>
+                        </select>
+                    </div>
+                  </li>
+                  <li class='nav-item py-1 px-lg-2'>
+                    <div class="optionbox" id="map-gran">
+                      <span class="style5">Focus</span>
+                      <br />
+                        <select id="gran">
+                            <option value="nat">National</option>
+                            <option value="st">State</option>
+                            <option value="cwa">CWA</option>
+                            <!-- <option value="co">County</option> -->
+                        </select>
+                    </div>
+                  </li>
+                  <li class='nav-item py-1 px-lg-2'>
+                    <div class="optionbox" id="state-choice">
+                      <span class="style5">State</span>
+                      <br />
+                        <select id="st-choice">
+                            <option disabled> Choose State </option>
+                        </select>
+                    </div>
+                  </li>
+                  <li class='nav-item py-1 px-lg-2'>
+                    <div class="optionbox" id="cwa-choice">
+                      <span class="style5">CWA</span>
+                      <br />
+                        <select id="c-choice">
+                            <option disabled> Choose CWA </option>
+                        </select>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="optionbox"><a href='../d1/'>Day 1</a></div>
+                    <b><div class="optionbox">Day 2</div></b>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+       
+        <div class="row">
+            <div id='map-holder' class='col-lg-6'>
+
+
+
+            </div>
+            <div id='table-holder' class='col-lg-6'>
+              <div class="tooltip bs-tooltip-top" role="tooltip">
+                <div class="arrow"></div>
+                <div class="tooltip-inner">
+                  Some tooltip text!
+                </div>
+              </div>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th id="cur-val-table" style="font-size: 1rem;" scope="column">National</th>
+                        </tr>
+                      <tr>
+                        <th scope="col"></th>
+                        <th scope="col" class='ttor cell'>Tornadoes</th>
+                        <th scope="col" class='tpop cell'>Population</th>
+                        <th scope="col" class='thosp cell'>Hospitals</th>
+                        <th scope="col" class='tmob cell'>Mobile Homes</th>
+                        <th scope="col" class='tpow cell'>Power Substations</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class='cell min'>Min</th>
+                            <td class='ttor cell min dat' data-toggle="tooltip"></td>
+                            <td class='tpop cell min dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            <td class='thosp cell min dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            <td class='tmob cell min dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            <td class='tpow cell min dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            </tr>
+                            <tr>
+                            <th scope="row" class='cell ten'>10%</th>
+                            <td class='ttor cell ten dat' data-toggle="tooltip"></td>
+                            <td class='tpop cell ten dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            <td class='thosp cell ten dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            <td class='tmob cell ten dat' data-toggle="tooltip" title="Climo goes here"></td>
+                            <td class='tpow cell ten dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        </tr>
+                      <tr>
+                        <th scope="row" class='cell med'>Median</th>
+                        <td class='ttor cell med dat' data-toggle="tooltip"></td>
+                        <td class='tpop cell med dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='thosp cell med dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='tmob cell med dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='tpow cell med dat' data-toggle="tooltip" title="Climo goes here"></td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class='cell ninety'>90%</th>
+                        <td class='ttor cell ninety dat' data-toggle="tooltip"></td>
+                        <td class='tpop cell ninety dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='thosp cell ninety dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='tmob cell ninety dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='tpow cell ninety dat' data-toggle="tooltip" title="Climo goes here"></td>
+                      </tr>
+                      <tr>
+                        <th scope="row" class='cell max'>Max</th>
+                        <td class='ttor cell max dat' data-toggle="tooltip"></td>
+                        <td class='tpop cell max dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='thosp cell max dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='tmob cell max dat' data-toggle="tooltip" title="Climo goes here"></td>
+                        <td class='tpow cell max dat' data-toggle="tooltip" title="Climo goes here"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                <hr>
+                <label for="thesh">Threshold</label>
+                <input type="text" name="thresh" id="thresh" size="7" value="1"/>
+                
+                <button class="btn btn-secondary btn-sm" id='thresh-update' type="button">
+                    <span>Update Threshold</span>
+                </button>
+                
+                <h4 id='context-jumbo'>
+                    
+                </h4>
+                <a href='./info.html'>Model Details</a>
+
+                <hr>
+                <h4>Expected Hail & Damaging Wind LSRs</h4>
+                <span class="lead" data-toggle="tooltip" title="Climo goes here">Hail: 10 Reports</span><br>
+                <span class="lead" data-toggle="tooltip" title="Climo goes here">Wind: 5 Reports</span><br>
+
+                <a href='./info.html'>Model Details</a>
+            </div>
+            
+        </div>
+        <div class="row">
+            <!-- <div id='dist-holder' class='col-6'> -->
+                <h3 id="prob-dist-title" class='col-12'>Tornado Impact Distributions (National)</h3>
+                <div class='col-lg-3'><h4>Population</h4></div>
+                <div class='col-lg-3'><h4>Hospitals</h4></div>
+                <div class='col-lg-3'><h4>Mobile Homes</h4></div>
+                <div class='col-lg-3'><h4>Power Substations</h4></div>
+                
+                <div id='pop-chart' class='col-lg-3 chart'>
+                  <!-- <h4>Hospitals</h4> -->
+                </div>
+
+                <div id='hosp-chart' class='col-lg-3 chart'>
+                    <!-- <h4>Hospitals</h4> -->
+                </div>
+
+                <div id='mob-chart' class='col-lg-3 chart'>
+                    <!-- <h4>Mobile Homes</h4> -->
+                </div>
+
+                <div id='pow-chart' class='col-lg-3 chart'>
+                    <!-- <h4>Power Substations</h4> -->
+                </div>
+
+            <!-- </div> -->
+        </div>
+
+
+
+
+    </div>
+
+
+
+<!-- Internal Scripts -->
+<script type='module' src='./includes/js/mapper.js'></script>
+<script type='module' src='./includes/js/charts.js'></script>
+<script type='module' src='./includes/js/stats.js'></script>
+<script type='module' src='./includes/js/plotBase.js'></script>
+<script type='module' src='./includes/js/interactions.js'></script>
+<script type='module' src='./includes/js/helper.js'></script>
+
+</body>
+</html>

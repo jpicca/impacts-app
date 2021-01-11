@@ -1,0 +1,72 @@
+{
+    "FWD": {
+        "hail": {
+            "forecast": 12,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 7,
+            "climo": 3
+        }
+    },
+    "OUN": {
+        "hail": {
+            "forecast": 20,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 55,
+            "climo": 3
+        }
+    },
+    "SJT": {
+        "hail": {
+            "forecast": 32,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 54,
+            "climo": 3
+        }
+    },
+    "EWX": {
+        "hail": {
+            "forecast": 23,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 52,
+            "climo": 3
+        }
+    },
+    "HGX": {
+        "hail": {
+            "forecast": 102,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 52,
+            "climo": 3
+        }
+    },
+    "SHV": {
+        "hail": {
+            "forecast": 10,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 5,
+            "climo": 3
+        }
+    },
+    "TSA": {
+        "hail": {
+            "forecast": 1,
+            "climo": 5
+        },
+        "wind": {
+            "forecast": 3,
+            "climo": 3
+        }
+    }
+}
