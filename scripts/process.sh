@@ -18,7 +18,9 @@ DIR_ROOT="/Users/josephpicca/projects/impacts/dev/impacts-app"
 #SUFFIX_TOR=Set to naming convention of the grib files
 #SUFFIX_SIG=Set to naming convention of the grib files
 N_SIMS=10000
-CURRENT_TIME=`date -u +"%Y%m%d%H%M%S"`
+CURRENT_TIME=`date -u +"%Y%m%d"`
+CURRENT_TIME="20201011"
+echo $CURRENT_TIME
 
 # PYTHON SETUP
 PYTHON="/Users/josephpicca/opt/anaconda3/envs/impacts/bin/python"
@@ -42,10 +44,10 @@ echo "Removing old files..."
 #rm $INPUT"*"
 
 echo "Downloading outlook files..."
-#wget -r --no-parent -P $INPUT -A "*_day1_*" $TEST_URL_ROOT
+#wget -r --no-parent -P $INPUT -A "*_day1_*"$CURRENT_TIME"*" $TEST_URL_ROOT
 
 echo "Running PAS script on grib files"
-D1_TOR=`find ../data/outlooks/impacts.pmarshwx.com/test-grib -maxdepth 1 -type f -name "torn_day1_grib2_*"`
+D1_TOR=`find ../data/outlooks/impacts.pmarshwx.com/test-grib -maxdepth 1 -type f -name "torn_day1_grib2_*"$CURRENT_TIME"*"`
 filename=`basename $D1_TOR`
 #echo $D1_TOR
 #echo $filename
@@ -56,7 +58,7 @@ OUTLOOK_TIME=${FILE_ARR[3]}
 OUTLOOK_TS=${FILE_ARR[4]}
 
 # Run PAS
-$PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA
+#$PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA
 
 # Run the stat maker
 $PYTHON $DIR_ROOT$SCRIPT2 -f $IMPACTS_DATA"/output/"$OUTLOOK_TS".psv.gz"
