@@ -1,0 +1,16 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /test-grib</title>
+ </head>
+ <body>
+<h1>Index of /test-grib</h1>
+<pre>      <a href="?C=N;O=D">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr>      <a href="/">Parent Directory</a>                             -   
+      <a href="hail_day1_grib2_0100_20201124003123">hail_day1_grib2_0100..&gt;</a> 2020-11-23 16:32  272   
+      <a href="sighail_day1_grib2_0100_20201124003123">sighail_day1_grib2_0..&gt;</a> 2020-11-23 16:32  272   
+      <a href="sigtorn_day1_grib2_0100_20201124003123">sigtorn_day1_grib2_0..&gt;</a> 2020-11-23 16:32  272   
+      <a href="sigwind_day1_grib2_0100_20201124003123">sigwind_day1_grib2_0..&gt;</a> 2020-11-23 16:32  272   
+      <a href="torn_day1_grib2_0100_20201124003123">torn_day1_grib2_0100..&gt;</a> 2020-11-23 16:32  272   
+      <a href="wind_day1_grib2_0100_20201124003123">wind_day1_grib2_0100..&gt;</a> 2020-11-23 16:32  272   
+<hr></pre>
+</body></html>
