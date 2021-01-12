@@ -9,7 +9,7 @@ import numpy as np
 import pyproj
 from scipy import stats
 
-import dataclasses as dc
+import dclasses as dc
 import pygrib as pg
 
 ### CLI Parser ###
