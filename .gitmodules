@@ -1,0 +1,3 @@
+[submodule "scripts/pygridder"]
+	path = scripts/pygridder
+	url = https://github.com/pmarshwx/pygridder.git

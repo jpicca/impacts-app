@@ -9,7 +9,7 @@ import numpy as np
 import pyproj
 from scipy import stats
 
-import dataclasses as dc
+import dclasses as dc
 import pygrib as pg
 
 ### CLI Parser ###
@@ -69,8 +69,8 @@ def read_ndfd_grib_file(grbfile):
 ### Setup Simulation ###
 # Determine Date/Time of outlook from filename
 date_in_name = ndfd_file.name.split("_")[-1]
-dt = datetime.datetime.strptime(date_in_name, "%Y%m%d%H%M%S.bin")
-outfile = outdir.joinpath(f"{dt.strftime('%Y%m%d%H%M')}_tsigtest.psv.gz")
+dt = datetime.datetime.strptime(date_in_name, "%Y%m%d%H%M%S")
+outfile = outdir.joinpath(f"{dt.strftime('%Y%m%d%H%M%S')}.psv.gz")
 
 # Read Tornado File; Extend to thunder (if chosen) and create continuous grid
 torn = read_ndfd_grib_file(ndfd_file)

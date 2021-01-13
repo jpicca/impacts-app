@@ -6,7 +6,7 @@ from scipy import interpolate as I
 from scipy import stats
 from skimage import measure
 
-import pygridder as pgrid
+from pygridder import pygridder as pgrid
 
 
 _fips2state = {'01': 'AL', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE',
