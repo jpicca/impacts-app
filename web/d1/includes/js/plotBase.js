@@ -100,6 +100,12 @@ class histChart extends chartBase {
     this.xAxis = function(g,xScale) { 
         g.attr("transform", `translate(0,${this.height - margin.bottom})`)
             .call(d3.axisBottom(xScale).tickFormat(d3.format("~s")))
+            .selectAll('text')
+            .attr("y",9)
+            .attr("x",6)
+            .attr("dy",".35em")
+            .style("text-anchor", "start")
+            .attr("transform", "rotate(40)")
     }
 
     this.yAxis = function(g,y) { 

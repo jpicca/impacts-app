@@ -6,32 +6,34 @@ import pandas as pd
 import argparse
 import glob
 import pathlib
+from joblib import load
+import json
 
 from outlookOrg import mlFeatures
 from outlookOrg.reader import *
 
 ### CLI Parser ###
+root_help = "The path to the root of the impacts app"
 file_help = "The basename of the tornado file associated with these outlooks."
-dir_help = "The directory where the outlook grib files can be found."
 impacts_help = "The path to the impacts npz files."
 
 # Parse arguments
 parser = argparse.ArgumentParser()
+parser.add_argument("-r", "--app_root", required=True, help=root_help)
 parser.add_argument("-f", "--tor_file", required=True, help=file_help)
-parser.add_argument("-p", "--path", required=True, help=dir_help)
 parser.add_argument("-i", "--impacts", required=True, help=impacts_help)
 
 args = parser.parse_args()
 
 # Primary variables
+app_root = pathlib.Path(args.app_root)
 tor_name_f = args.tor_file
-outlook_dir = pathlib.Path(args.path)
 impact_grids = pathlib.Path(args.impacts)
 
-
-# Global variables
 hazards = ['hail','sighail','wind','sigwind','torn','sigtorn']
 cwas = ['FWD','OUN','SJT','EWX','HGX','SHV','TSA']
+
+final_dict = {}
 
 # Instantiate unprocessed features object
 uf = mlFeatures()
@@ -61,7 +63,7 @@ for idx,name in enumerate([sigtorn_f,sigwind_f,sighail_f,torn_f,wind_f,hail_f]):
 
     # Open grib file
     print(f'Reading: {name}')
-    probs = readOutlook(str(pathlib.Path(outlook_dir,name)))
+    probs = readOutlook(str(pathlib.Path(app_root,'data','outlooks','impacts.pmarshwx.com','test-grib',name)))
 
     grids = getGrids(impact_grids)
 
@@ -119,7 +121,61 @@ uf_df = pd.DataFrame.from_dict(uf.__dict__)
 
 proc_feats = processFeatures(uf_df)
 
-print(proc_feats.info())
-print(proc_feats.shape)
+# Load models and make predictions for CWAs
+hail_model = load(pathlib.Path(app_root,'scripts','models','FWD_CWA_hailLSR_gbr.joblib'))
+wind_model = load(pathlib.Path(app_root,'scripts','models','FWD_CWA_windLSR_gbr.joblib'))
 
+# Get initial predictions
+lsr_preds = zip(cwas,makePredictions(proc_feats,hail_model),makePredictions(proc_feats,wind_model))
 
+#-----* Read in climo LSR data *-----#
+
+# Get the date index
+# Helper array for day indexing
+aggregateMonths = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
+
+def getDayIdx(ts):
+    dayStr = ts[4:8]
+    
+    month = int(dayStr[:2])
+    day = int(dayStr[2:])
+
+    if otlk_day == '1':
+        return aggregateMonths[month-1]+day-1
+    else:
+        # Logic for when the D2 outlook is valid for Jan 1
+        day2idx = aggregateMonths[month-1]+day
+        if day2idx < 366:
+            return day2idx
+        else:
+            return 0
+
+dayIdx = getDayIdx(timestamp)
+
+# Load saved climo data
+lsr_path = pathlib.Path(app_root,'data','climo','lsr_climo_smAvg.json')
+
+with open(lsr_path) as c:
+    lsr_data = json.load(c)
+
+for cwa, hail_pred, wind_pred in lsr_preds:   
+    hail_climo = lsr_data[cwa]['movAvg_hail'][dayIdx]
+    wind_climo = lsr_data[cwa]['movAvg_wind'][dayIdx]
+
+    final_dict[cwa] = {
+        'hail': {
+            'forecast': hail_pred,
+            'climo': hail_climo
+        },
+        'wind': {
+            'forecast': wind_pred,
+            'climo': wind_climo
+        }
+    }
+
+# Path to save LSR preds/climo
+write_path = pathlib.Path(app_root,'web',f'd{otlk_day}','includes','data','init','ml-lsr.json')
+
+# Write out LSR preds/climo
+with open(write_path, 'w') as fp:
+    json.dump(final_dict, fp)

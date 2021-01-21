@@ -3,7 +3,7 @@ import { quantileCalc } from './stats.js'
 import { natTableProcess } from './helper.js'
 
 // New file format to read in sims + state/cwa starter info (10/med/90 + climo)
-export default d3.json('./includes/data/init/data_test.json').then(function(impacts) {
+export default d3.json('./includes/data/init/data.json').then(function(impacts) {
     var h = [], m = [], pop = [], pow = [], tor = [];
     let initData = impacts;
 
