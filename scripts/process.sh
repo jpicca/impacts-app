@@ -43,7 +43,7 @@ OUTLOOK_DIR=$INPUT"/impacts.pmarshwx.com/test-grib"
 TEST_URL_ROOT="http://impacts.pmarshwx.com/test-grib/"
 
 echo "Removing old files..."
-#rm -r $OUTLOOK_DIR
+rm -r $OUTLOOK_DIR
 #ls $OUTLOOK_DIR"/*"
 
 echo "Downloading outlook files..."
@@ -62,6 +62,11 @@ filename=`basename $D1_TOR`
 IFS="_" read -ra FILE_ARR <<< "$filename"
 OUTLOOK_TIME=${FILE_ARR[3]}
 OUTLOOK_TS=${FILE_ARR[4]}
+
+
+# Update outlook time file
+rm $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
+echo {$OUTLOOK_TIME,$OUTLOOK_TS} | tr ' ' , >> $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
 
 # Run PAS
 $PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA

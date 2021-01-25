@@ -447,6 +447,7 @@ export function interact(torPaths,path,preds) {
                 .attr('d',path)
                 .attr("class", d => `${d.percentile} ${d.impact}`)
                 .classed(`tor-paths ${loc}`,true)
+                .attr('stroke-linecap','round')
                 .attr('stroke-width',0.5)
                 .attr('stroke','#000')
                 .attr('visibility','hidden')
@@ -487,6 +488,7 @@ export function interact(torPaths,path,preds) {
                             .attr('d',path)
                             .attr("class", d => `${d.percentile} ${d.impact}`)
                             .classed(`tor-paths ${loc}`,true)
+                            .attr('stroke-linecap','round')
                             .attr('stroke-width',0.5)
                             .attr('stroke','#000')
                             .attr('visibility','hidden')
@@ -505,6 +507,7 @@ export function interact(torPaths,path,preds) {
                     .attr('d',path)
                     .attr("class", d => `${d.percentile} ${d.impact}`)
                     .classed(`tor-paths ${loc}`,true)
+                    .attr('stroke-linecap','round')
                     .attr('stroke-width',0.5)
                     .attr('stroke','#000')
                     .attr('visibility','hidden')
@@ -627,7 +630,7 @@ export function interact(torPaths,path,preds) {
 
         // Update text on page
         d3.select('#context-jumbo')
-            .text(`At least ${thresh} ${arrayMapper[$('#prod').val()][1]} were exposed in 
+            .text(`At least ${thresh} ${arrayMapper[$('#prod').val()][1]} were exposed to a tornado in 
             ${count} of 10k simulations (${(count/100).toFixed(1)} %)`)
             //.text(`${count} of 10k simulations (${(count/100).toFixed(1)} %) impacted at least
             //${thresh} ${arrayMapper[$('#prod').val()][1]}.`)
