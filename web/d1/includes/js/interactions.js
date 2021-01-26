@@ -133,8 +133,8 @@ export function interact(torPaths,path,preds) {
             })
 
         } else {
-            hailcell.text('No Predicted Reports and/or CWA not included at this time.')
-            windcell.text('No Predicted Reports and/or CWA not included at this time.')
+            hailcell.text('No Predicted Reports and/or CWA/State not included at this time.')
+            windcell.text('No Predicted Reports and/or CWA/State not included at this time.')
         }
 
         
@@ -152,6 +152,9 @@ export function interact(torPaths,path,preds) {
                     let isChecked = d3.select('#tordio').property('checked');
 
                     if (val == 'cwa') {
+
+                        // Update the expected LSR
+                        this.updatePreds($('#c-choice').val())
 
                         // Update the selected var and the table title
                         // this.vars.selected = $('#c-choice').val()
@@ -192,6 +195,9 @@ export function interact(torPaths,path,preds) {
 
                     } else if (val == 'st') {
 
+                        // Update the expected LSR
+                        this.updatePreds($('#st-choice').val())
+
                         // Update the selected var and the table title
                         // this.vars.selected = $('#st-choice').val()
                         d3.select('#cur-val-table').text(`State: ${$('#st-choice').val()}`)
@@ -231,18 +237,8 @@ export function interact(torPaths,path,preds) {
 
                     } else {
 
-                        // Update table for national stats
-                        // let statsDict = this.vars.natQuantiles;
-
-                        // Object.keys(statsDict).forEach(function(key) {
-                        //     Object.keys(statsDict[key]).forEach(function(innerKey) {
-                    
-                        //         //console.log(`.t${key}.${innerKey}`)
-                    
-                        //         d3.select(`.t${key}.${innerKey}`).text((+statsDict[key][innerKey]).toFixed())
-                    
-                        //     })
-                        // })
+                        // Update the expected LSR
+                        this.updatePreds('nat')
 
                         this.updateTable('national')
 
@@ -285,6 +281,9 @@ export function interact(torPaths,path,preds) {
 
                 case 'st-choice':
 
+                    // Update the expected LSR
+                    this.updatePreds($('#st-choice').val())
+
                     // this.vars.selected = val;
                     d3.select('#cur-val-table').text(`State: ${val}`)
 
@@ -299,6 +298,9 @@ export function interact(torPaths,path,preds) {
                     break;
 
                 case 'c-choice':
+
+                    // Update the expected LSR
+                    this.updatePreds($('#c-choice').val())
 
                     // this.vars.selected = val;
                     d3.select('#cur-val-table').text(`CWA: ${val}`)
@@ -445,6 +447,7 @@ export function interact(torPaths,path,preds) {
                 .attr('d',path)
                 .attr("class", d => `${d.percentile} ${d.impact}`)
                 .classed(`tor-paths ${loc}`,true)
+                .attr('stroke-linecap','round')
                 .attr('stroke-width',0.5)
                 .attr('stroke','#000')
                 .attr('visibility','hidden')
@@ -485,6 +488,7 @@ export function interact(torPaths,path,preds) {
                             .attr('d',path)
                             .attr("class", d => `${d.percentile} ${d.impact}`)
                             .classed(`tor-paths ${loc}`,true)
+                            .attr('stroke-linecap','round')
                             .attr('stroke-width',0.5)
                             .attr('stroke','#000')
                             .attr('visibility','hidden')
@@ -503,6 +507,7 @@ export function interact(torPaths,path,preds) {
                     .attr('d',path)
                     .attr("class", d => `${d.percentile} ${d.impact}`)
                     .classed(`tor-paths ${loc}`,true)
+                    .attr('stroke-linecap','round')
                     .attr('stroke-width',0.5)
                     .attr('stroke','#000')
                     .attr('visibility','hidden')
@@ -625,7 +630,7 @@ export function interact(torPaths,path,preds) {
 
         // Update text on page
         d3.select('#context-jumbo')
-            .text(`At least ${thresh} ${arrayMapper[$('#prod').val()][1]} were exposed in 
+            .text(`At least ${thresh} ${arrayMapper[$('#prod').val()][1]} were exposed to a tornado in 
             ${count} of 10k simulations (${(count/100).toFixed(1)} %)`)
             //.text(`${count} of 10k simulations (${(count/100).toFixed(1)} %) impacted at least
             //${thresh} ${arrayMapper[$('#prod').val()][1]}.`)

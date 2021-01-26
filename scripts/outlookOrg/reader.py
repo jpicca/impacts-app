@@ -54,11 +54,22 @@ def processFeatures(df):
 
     df['valid_doy'] = pd.to_datetime(df['valid_date'], format='%Y%m%d%H%M%S').dt.dayofyear
 
-    # Make dummy variables for prediction
-    #df_dummies = df.join(pd.get_dummies(df['cwa']))
-    #df_dummies = df_dummies.join(pd.get_dummies(['otlk_day'],prefix='otlkday'))
-    #df_dummies = df_dummies.join(pd.get_dummies(['otlk_time'],prefix='otlktime'))
-
     proc_feats = df.drop(columns=['cwa','valid_date','otlk_day','otlk_time'])
 
     return proc_feats
+
+def makePredictions(df,model):
+
+    # Make predictions
+    preds = model.predict(df)
+
+    # Set any negative values to 0 (the Grad Boosting regressor can predict slight negative values)
+    preds[preds < 0] = 0
+
+    # Round the remaining non-zero, positive values
+    format_preds = np.round_(preds,decimals=0)
+
+    return format_preds
+
+    
+

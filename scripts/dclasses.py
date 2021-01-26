@@ -8,6 +8,8 @@ from skimage import measure
 
 from pygridder import pygridder as pgrid
 
+path_root = '/Users/josephpicca/projects/impacts/dev/impacts-app/scripts/'
+
 
 _fips2state = {'01': 'AL', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE',
                '11': 'DC', '12': 'FL', '13': 'GA', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA',
@@ -71,7 +73,7 @@ class ImpactGrids(object):
             
             # Workaround for loading the corrected wfo file, while keeping from having projection errors (still unsure why these happen with pyproj)
             #self.wfo = NPZ["wfo"]
-            self.wfo = np.load(pathlib.Path('./impacts-data/pas-input-data/cwas.npz'))['cwas']
+            self.wfo = np.load(pathlib.Path(f'{path_root}impacts-data/pas-input-data/cwas.npz'))['cwas']
             self.hospitals = NPZ["hospitals"]
             self.hospitalbeds = NPZ["hbeds"]
             self.mobilehomes = NPZ["mhomes"]

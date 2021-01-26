@@ -81,6 +81,7 @@ class histChart extends chartBase {
         // data-toggle="tooltip" title="Climo goes here">
         d3.selectAll('rect')
             .attr('data-toggle','tooltip')
+            .attr('data-placement','right')
             .attr('title', d => {
                 // If the bar only represents one value, just show that value
                 // Otherwise, show the range it represents
@@ -100,6 +101,12 @@ class histChart extends chartBase {
     this.xAxis = function(g,xScale) { 
         g.attr("transform", `translate(0,${this.height - margin.bottom})`)
             .call(d3.axisBottom(xScale).tickFormat(d3.format("~s")))
+            .selectAll('text')
+            .attr("y",9)
+            .attr("x",6)
+            .attr("dy",".35em")
+            .style("text-anchor", "start")
+            .attr("transform", "rotate(50)")
     }
 
     this.yAxis = function(g,y) { 
@@ -145,15 +152,15 @@ class histChart extends chartBase {
 
     this.yScaleDom = function(data) {
 
-        let maxArr = data.map(arr => arr.length)
-        let maxDec = d3.max(maxArr)/nSims;
+        // let maxArr = data.map(arr => arr.length)
+        // let maxDec = d3.max(maxArr)/nSims;
 
 
-        if (maxDec < 0.5) {
-            return [0,maxDec*2]
-        } 
+        // if (maxDec < 0.5) {
+        //     return [0,maxDec*2]
+        // } 
 
-        return [0,1];
+        return [0,0.5];
 
     }
 

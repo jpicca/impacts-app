@@ -9,6 +9,7 @@ import json
 
 ### CLI Parser ###
 file_help = "The sim file to be used to create stats output."
+approot_help = "The path to the root of the impacts app."
 nsim_help = "The number of simulations to run. Default is 10,000."
 climo_help = "The location where the climo files are stored."
 d_help = "Which day (D1 or D2) is being processed."
@@ -17,6 +18,7 @@ out_help = "The location where state/cwa files are written."
 # Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--file", required=True, help=file_help)
+parser.add_argument("-r", "--approot", required=True, help=approot_help)
 parser.add_argument("-o", "--outdir", required=False, default="../web", type=str, help=out_help)
 parser.add_argument("-n", "--nsims", required=False, default=10000, type=int, help=nsim_help)
 parser.add_argument("-c", "--climopath", required=False, default="../data/climo", type=str, help=climo_help)
@@ -27,12 +29,12 @@ args = parser.parse_args()
 # Primary variables
 f = pathlib.Path(args.file)
 nsims = args.nsims
-climo = pathlib.Path(args.climopath)
-outdir = pathlib.Path(args.outdir)
+climo = pathlib.Path(args.approot,args.climopath)
+outdir = pathlib.Path(args.approot,args.outdir)
 otlk_day = args.day
 
 # Helper array for day indexing
-aggregateMonths = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
+aggregateMonths = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]
 
 # Remove old state and CWA files
 oldfiles = glob.glob(f'{outdir}/d{otlk_day}/includes/data/followup/*')
@@ -61,7 +63,12 @@ def getDayIdx(file):
     if otlk_day == 1:
         return aggregateMonths[month-1]+day-1
     else:
-        return aggregateMonths[month-1]+day
+        # Logic for when the D2 outlook is valid for Jan 1
+        day2idx = aggregateMonths[month-1]+day
+        if day2idx < 366:
+            return day2idx
+        else:
+            return 0
 
 # Function to count tornadoes in each simulation
 def torCounter(df,filled_df):
@@ -232,7 +239,7 @@ for state in statesImpacted:
 
     masterDict['states'].append(stateDict)
 
-    ################
+################
 ##### CWAs #####
 ################
 wfoBrokenOut = df.assign(category=df['wfos'].str.split(',')).explode('category').reset_index(drop=True)

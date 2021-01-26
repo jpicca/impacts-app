@@ -19,7 +19,7 @@ DIR_ROOT="/Users/josephpicca/projects/impacts/dev/impacts-app"
 #SUFFIX_SIG=Set to naming convention of the grib files
 N_SIMS=10000
 CURRENT_TIME=`date -u +"%Y%m%d"`
-CURRENT_TIME="20201011"
+CURRENT_TIME="20200318"
 echo $CURRENT_TIME
 
 # PYTHON SETUP
@@ -31,6 +31,7 @@ SCRIPT3=$SCRIPT_DIR"/lsrpred.py"
 IMPACTS_DATA=$DIR_ROOT$SCRIPT_DIR"/impacts-data"
 
 INPUT=$DIR_ROOT"/data/outlooks"
+OUTLOOK_DIR=$INPUT"/impacts.pmarshwx.com/test-grib"
 
 # # Download data // ** This will need updating for when actual outlooks are acquired **
 # echo "Downloading D1 tornado outlook..."
@@ -42,31 +43,39 @@ INPUT=$DIR_ROOT"/data/outlooks"
 TEST_URL_ROOT="http://impacts.pmarshwx.com/test-grib/"
 
 echo "Removing old files..."
-#rm $INPUT"*"
+rm -r $OUTLOOK_DIR
+#ls $OUTLOOK_DIR"/*"
 
 echo "Downloading outlook files..."
-#wget -r --no-parent -P $INPUT -A "*_day1_*"$CURRENT_TIME"*" $TEST_URL_ROOT
+wget -r --no-parent -P $INPUT -A "*_day1_*"$CURRENT_TIME"*" $TEST_URL_ROOT
+
+echo "Downloading d1 tornado outlook geojson..."
+#wget -O $DIR_ROOT"/web/d1/includes/geo/test.geojson" https://www.spc.noaa.gov/products/outlook/day1otlk_torn.nolyr.geojson
 
 echo "Running PAS script on grib files"
-OUTLOOK_DIR=$INPUT"/impacts.pmarshwx.com/test-grib"
 D1_TOR=`find $OUTLOOK_DIR -maxdepth 1 -type f -name "torn_day1_grib2_*"$CURRENT_TIME"*"`
 filename=`basename $D1_TOR`
 #echo $D1_TOR
 #echo $filename
 
-# Get outlook date and outlook time
+# Get outlook date and outlook time by splitting basename at underscore
 IFS="_" read -ra FILE_ARR <<< "$filename"
 OUTLOOK_TIME=${FILE_ARR[3]}
 OUTLOOK_TS=${FILE_ARR[4]}
 
+
+# Update outlook time file
+rm $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
+echo {$OUTLOOK_TIME,$OUTLOOK_TS} | tr ' ' , >> $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
+
 # Run PAS
-#$PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA
+$PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA
 
 # Run the stat maker
-#$PYTHON $DIR_ROOT$SCRIPT2 -f $IMPACTS_DATA"/output/"$OUTLOOK_TS".psv.gz"
+$PYTHON $DIR_ROOT$SCRIPT2 -f $IMPACTS_DATA"/output/"$OUTLOOK_TS".psv.gz" -r $DIR_ROOT$SCRIPT_DIR
 
 # Run lsr feature engineering / prediction
-$PYTHON $DIR_ROOT$SCRIPT3 -f $filename -p $OUTLOOK_DIR -i $IMPACTS_DATA"/pas-input-data"
+$PYTHON $DIR_ROOT$SCRIPT3 -r $DIR_ROOT -f $filename -i $IMPACTS_DATA"/pas-input-data"
 
 
 
