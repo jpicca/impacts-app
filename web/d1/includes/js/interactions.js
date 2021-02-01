@@ -1,5 +1,5 @@
-import initData from './charts.js';
-import { natTableProcess, stateDict } from './helper.js';
+import initData, { prevData, quantFormatter } from './charts.js';
+import { natTableProcess, tablePopulate, stateDict } from './helper.js';
 import { fillColorDict } from './const.js'
 import histChart from './plotBase.js'
 
@@ -12,18 +12,37 @@ export function interact(torPaths,path,preds) {
         'selSims':[],
         'states':[],
         'cwas':[],
-        'natQuantiles': {}
+        'natQuantiles': {},
+        'nationals':[]
+    }
+
+    exports.prevars = {
+        'nationals': [],
+        'states': [],
+        'cwas': []
     }
 
     // Load the sims from the initial data file into our exports dict 
     // THis includes individual sim data on national scale
     // and summary stats (quantiles) on states/cwas for map filling
-    Promise.resolve(initData).then(data => {
+    //Promise.resolve(initData).then(data => {
+    Promise.all([initData,prevData]).then(data => {
 
-        exports.vars.sims = data.sims;
-        exports.vars.states = data.states;
-        exports.vars.cwas = data.cwas;
-        exports.vars.natQuantiles = data.natQuantiles;
+        let init = data[0]
+        let prev = data[1]
+
+        exports.vars.sims = init.sims;
+        exports.vars.states = init.states;
+        exports.vars.cwas = init.cwas;
+        exports.vars.natQuantiles = init.natQuantiles;
+        exports.vars.nationals = init.national;
+
+        //console.log(prev)
+        exports.prevars.nationals = prev.national;
+        exports.prevars.states = prev.states;
+        exports.prevars.cwas = prev.cwas;
+
+        //console.log(exports.prevars)
         
     })
 
@@ -240,7 +259,8 @@ export function interact(torPaths,path,preds) {
                         // Update the expected LSR
                         this.updatePreds('nat')
 
-                        this.updateTable('national')
+                        //this.updateTable('national')
+                        this.updateTable('nationals')
 
                         // this.vars.selected = val;
                         d3.select('#cur-val-table').text(`National`)
@@ -461,7 +481,8 @@ export function interact(torPaths,path,preds) {
             // New state/cwa tor path loader
             if (!Object.keys(torPaths['followup']).includes(loc)) {
                 d3.json(`./includes/data/followup/${loc}_ind_tors.json`)
-                    .then(data => {
+                    .then((data) => {
+
                         torPaths['followup'][loc] = []
 
                         Object.keys(data).forEach(outerKey => {
@@ -540,16 +561,18 @@ export function interact(torPaths,path,preds) {
             })
 
             var newPop = new histChart();
-            newPop.makeChart(pop,'#pop-chart',false);
+            //newPop.makeChart(pop,'#pop-chart',false);
+            newPop.makeChart(quantFormatter(pop),'#pop-chart',false);
 
             var newHosp = new histChart();
-            newHosp.makeChart(h,'#hosp-chart',false);
+            newHosp.makeChart(quantFormatter(h),'#hosp-chart',false);
 
             var newMob = new histChart();
-            newMob.makeChart(m,'#mob-chart',false);
+            newMob.makeChart(quantFormatter(m,0.9,true),'#mob-chart',false);
 
             var newPow = new histChart();
-            newPow.makeChart(pow,'#pow-chart',false);
+            //newPow.makeChart(pow,'#pow-chart',false);
+            newPow.makeChart(quantFormatter(pow),'#pow-chart',false);
 
             return;
 
@@ -577,16 +600,19 @@ export function interact(torPaths,path,preds) {
             this.updateThresh(this.vars.selSims);
 
             var newPop = new histChart();
-            newPop.makeChart(pop,'#pop-chart',false);
+            // newPop.makeChart(pop,'#pop-chart',false);
+            newPop.makeChart(quantFormatter(pop),'#pop-chart',false);
             
             var newHosp = new histChart();
-            newHosp.makeChart(h,'#hosp-chart',false);
+            newHosp.makeChart(quantFormatter(h),'#hosp-chart',false);
 
             var newMob = new histChart();
-            newMob.makeChart(m,'#mob-chart',false);
+            //newMob.makeChart(m,'#mob-chart',false);
+            newMob.makeChart(quantFormatter(m,0.9,true),'#mob-chart',false);
 
             var newPow = new histChart();
-            newPow.makeChart(pow,'#pow-chart',false);
+            //newPow.makeChart(pow,'#pow-chart',false);
+            newPow.makeChart(quantFormatter(pow),'#pow-chart',false);
 
         }.bind(this)).catch(function(err) {
             console.log('No file!')
@@ -665,6 +691,8 @@ export function interact(torPaths,path,preds) {
             region = $('#st-choice').val() 
         } else if (level == 'cwas') {
             region = $('#c-choice').val() 
+        } else if (level == 'nationals') { 
+            region = 'national'
         } else {
             // console.log('National!')
             Promise.resolve(initData).then(data => natTableProcess(data,'data-original-title'))
@@ -674,15 +702,21 @@ export function interact(torPaths,path,preds) {
 
         //console.log(`This is updateTable: ${region}`)
 
-        const percList = ['min','ten','med','ninety','max'];
+        //const percList = ['min','ten','med','ninety','max'];
 
         // Get data from var holder
         let filtered = this.vars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
+        let filt_prev = this.prevars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
+        console.log(filt_prev)
+        tablePopulate(filtered,filt_prev,'data-original-title')
         
+        /*
         try {
 
             Object.keys(filtered[0]).forEach(function(key) {
-                if ((key != 'state') && (key != 'cwa')) { 
+
+                if (!['state','cwa','national'].includes(key)) {
+                //if ((key != 'state') && (key != 'cwa') && (key != 'national')) { 
 
                     let valArr = filtered[0][key][0]
                     let climoArr = filtered[0][key][1]
@@ -751,7 +785,7 @@ export function interact(torPaths,path,preds) {
                 .text(0)
     
 
-        }
+        }*/
         
     }
 
@@ -769,16 +803,16 @@ export function interact(torPaths,path,preds) {
 
         }
 
-        d3.selectAll('.cell')
-            .style('background-color', '#fff')
+        //d3.selectAll('.cell')
+        //    .style('background-color', '#fff')
 
         // Hide contours
         // d3.selectAll('.contours')
         //     .attr('visibility','hidden')
 
         // Highlight appropriate column
-        d3.selectAll(`.t${val}`)
-            .style('background-color','rgba(187, 181, 181, 0.3)')
+        //d3.selectAll(`.t${val}`)
+        //    .style('background-color','rgba(187, 181, 181, 0.3)')
 
     }
 

@@ -25,6 +25,40 @@ export const nSims = 10000;
 // export const fillColor = d3.scaleSequential([0,75], customReds).nice();
 export const customReds = d3.scaleLinear().range(["rgb(255,245,240)", "rgb(214,37,34)"])
 
+const divergeMap = d3.interpolateRdBu
+
+// Note that the input domains are flipped since the d3 color map goes from red to blue
+export const diffColorDict = {
+    'pop': {
+        'min': d3.scaleSequential([50,-50], divergeMap),
+        'ten': d3.scaleSequential([1000,-1000], divergeMap),
+        'med': d3.scaleSequential([10000,-10000], divergeMap),
+        'ninety': d3.scaleSequential([100000,-100000], divergeMap),
+        'max': d3.scaleSequential([1000000,-1000000], divergeMap)
+    },
+    'hosp': {
+        'min': d3.scaleSequential([1,-1], divergeMap),
+        'ten': d3.scaleSequential([2,-2], divergeMap),
+        'med': d3.scaleSequential([2,-2], divergeMap),
+        'ninety': d3.scaleSequential([3,-3], divergeMap),
+        'max': d3.scaleSequential([10,-10], divergeMap)
+    },
+    'pow': {
+        'min': d3.scaleSequential([1,-1], divergeMap),
+        'ten': d3.scaleSequential([2,-2], divergeMap),
+        'med': d3.scaleSequential([2,-2], divergeMap),
+        'ninety': d3.scaleSequential([5,-5], divergeMap),
+        'max': d3.scaleSequential([50,-50], divergeMap)
+    },
+    'mob': {
+        'min': d3.scaleSequential([25,-25], divergeMap),
+        'ten': d3.scaleSequential([50,-50], divergeMap),
+        'med': d3.scaleSequential([100,-100], divergeMap),
+        'ninety': d3.scaleSequential([500,-500], divergeMap),
+        'max': d3.scaleSequential([5000,-5000], divergeMap)
+    }
+}
+
 export const fillColorDict = {
     'pop': {
         'min': d3.scaleSequential([1,100], customReds),

@@ -62,3 +62,7 @@ export function quantileCalc(sims) {
     return statsDict;
 
 }
+
+export function formatQuantile(dict) {
+    
+}
