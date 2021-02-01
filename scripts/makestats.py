@@ -43,7 +43,7 @@ for file in oldfiles:
 
 # Load saved climo data
 with open(f'{climo}/pop_climo_torSmAvg.json') as file:
-        pop_data = json.load(file)
+    pop_data = json.load(file)
         
 with open(f'{climo}/hosp_climo_torSmAvg.json') as file:
     hosp_data = json.load(file)
@@ -93,6 +93,9 @@ def getClimo():
                             'mob': {},
                             'hosp': {}}
 
+    for feature in ['population','hospitals','mobilehomes','psubstations','tors']:
+        masterDict['national'][0][feature].append([])
+
     # Load nat climo data into dictionary using the proper day
     for key in pop_data['nat'].keys():
         
@@ -101,7 +104,17 @@ def getClimo():
         masterDict['natClimo']['mob'][key] = mob_data['nat'][key][dayIdx]
         masterDict['natClimo']['pow'][key] = pow_data['nat'][key][dayIdx]
 
+        # This is the new method for appending the nat climo
+        masterDict['national'][0]['population'][1].append(pop_data['nat'][key][dayIdx])
+        masterDict['national'][0]['hospitals'][1].append(hosp_data['nat'][key][dayIdx])
+        masterDict['national'][0]['mobilehomes'][1].append(mob_data['nat'][key][dayIdx])
+        masterDict['national'][0]['psubstations'][1].append(pow_data['nat'][key][dayIdx])
+
 masterDict = {}
+masterDict['national'] = [{'national':'national'}]
+masterDict['sims'] = []
+masterDict['states'] = []
+masterDict['cwas'] = []
 ind_torDict = {}
 
 # Read data into dataframe
@@ -111,14 +124,14 @@ except EmptyDataError:
     import sys
     print("The sims file is empty (presumably due to there being no simulated tornadoes).")
 
-    # Code to write out an empty csv
-    masterDict['sims'] = []
-    masterDict['states'] = []
-    masterDict['cwas'] = []
+    # Fill out the national quantiles with 0s
+    for impact in ['population','hospitals','mobilehomes','psubstations']:
+        masterDict['national'][0][impact] = [[0,0,0,0,0]]
+
     getClimo()
 
     # Write master json data
-    with open(f'{outdir}/d{otlk_day}/includes/data/init/data_test.json', 'w') as fp:
+    with open(f'{outdir}/d{otlk_day}/includes/data/init/data.json', 'w') as fp:
         json.dump(masterDict, fp)
 
     sys.exit(0)
@@ -130,9 +143,18 @@ fields = sims.sum().loc[:,('population','hospitals','mobilehomes','psubstations'
 # Fill missing sims with 0s (artifact of how pas writes out files)
 fill_fields = fields.reindex(list(range(1,nsims+1)),fill_value=0)
 
+# Get tornado counts
+merged = torCounter(df,fill_fields)
+
 ## ** Grabbing tornado tracks **
-quants = fill_fields.quantile(q=[0,0.1,0.5,0.9,1],interpolation='nearest')
+#quants = fill_fields.quantile(q=[0,0.1,0.5,0.9,1],interpolation='nearest')
+quants = merged.quantile(q=[0,0.1,0.5,0.9,1],interpolation='nearest')
+
 for impact in ['population','hospitals','mobilehomes','psubstations']:
+
+    # *** Testing for updated nat quantile creation ***
+    masterDict['national'][0][impact] = [quants[impact].to_list()]
+
     tmin = fill_fields[fill_fields[impact] == quants.loc[0,impact]].index[0]
     tten = fill_fields[fill_fields[impact] == quants.loc[0.1,impact]].index[0]
     tmed = fill_fields[fill_fields[impact] == quants.loc[0.5,impact]].index[0]
@@ -147,8 +169,8 @@ for impact in ['population','hospitals','mobilehomes','psubstations']:
     ind_torDict[impact]['ninety'] = df[df['sim'] == tnine].loc[:,['slon','slat','elon','elat',impact]].values.tolist()
     ind_torDict[impact]['max'] = df[df['sim'] == tmax].loc[:,['slon','slat','elon','elat',impact]].values.tolist()
 
-# Get tornado counts
-merged = torCounter(df,fill_fields)
+# Add tors into nat quantile entry
+masterDict['national'][0]['tors'] = [quants['tors'].to_list()]
 
 # Place sims into dict
 masterDict['sims'] = merged.values.tolist()
@@ -174,8 +196,6 @@ parmHelper = {
     'mobilehomes': mob_data,
     'psubstations': pow_data
 }
-
-masterDict['states'] = []
 
 for state in statesImpacted:
     
@@ -249,8 +269,6 @@ wfoBrokenOut = wfoBrokenOut[wfoBrokenOut['category'].notna()]
 
 # Grab a list of the unique states in the simulation
 wfoImpacted = wfoBrokenOut['category'].unique().tolist()
-
-masterDict['cwas'] = []
 
 for wfo in wfoImpacted:
     cwaDict = {

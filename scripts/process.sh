@@ -18,9 +18,15 @@ DIR_ROOT="/Users/josephpicca/projects/impacts/dev/impacts-app"
 #SUFFIX_TOR=Set to naming convention of the grib files
 #SUFFIX_SIG=Set to naming convention of the grib files
 N_SIMS=10000
-CURRENT_TIME=`date -u +"%Y%m%d"`
-CURRENT_TIME="20200318"
-echo $CURRENT_TIME
+
+# either set current date to actual current date (first line) or set current date to custom date
+CURRENT_DATE=`date -u +"%Y%m%d"`
+CURRENT_DATE="20200318"
+echo $CURRENT_DATE
+
+# set current outlook time
+CURRENT_TIME=`date -u +"%H%M"`
+VALID_TIME="1630"
 
 # PYTHON SETUP
 PYTHON="/Users/josephpicca/opt/anaconda3/envs/impacts/bin/python"
@@ -42,18 +48,18 @@ OUTLOOK_DIR=$INPUT"/impacts.pmarshwx.com/test-grib"
 # Testing purposes -- download old outlooks as a test from pmarsh site
 TEST_URL_ROOT="http://impacts.pmarshwx.com/test-grib/"
 
+# Remove old outlook grib files
 echo "Removing old files..."
-rm -r $OUTLOOK_DIR
+#rm -r $OUTLOOK_DIR
 #ls $OUTLOOK_DIR"/*"
 
 echo "Downloading outlook files..."
-wget -r --no-parent -P $INPUT -A "*_day1_*"$CURRENT_TIME"*" $TEST_URL_ROOT
+#wget -r --no-parent -P $INPUT -A "*_day1_*"$CURRENT_DATE"*" $TEST_URL_ROOT
 
 echo "Downloading d1 tornado outlook geojson..."
 #wget -O $DIR_ROOT"/web/d1/includes/geo/test.geojson" https://www.spc.noaa.gov/products/outlook/day1otlk_torn.nolyr.geojson
 
-echo "Running PAS script on grib files"
-D1_TOR=`find $OUTLOOK_DIR -maxdepth 1 -type f -name "torn_day1_grib2_*"$CURRENT_TIME"*"`
+D1_TOR=`find $OUTLOOK_DIR -maxdepth 1 -type f -name "torn_day1_grib2_1630*"$CURRENT_DATE"*" | sort -nr | head -1`
 filename=`basename $D1_TOR`
 #echo $D1_TOR
 #echo $filename
@@ -63,12 +69,15 @@ IFS="_" read -ra FILE_ARR <<< "$filename"
 OUTLOOK_TIME=${FILE_ARR[3]}
 OUTLOOK_TS=${FILE_ARR[4]}
 
+# Copy the init data file (with nat/st/cwa quants to a new file)
+#cp $DIR_ROOT"/web/d1/includes/data/init/data.json" $DIR_ROOT"/web/d1/includes/data/init/data_prev.json"
 
 # Update outlook time file
 rm $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
 echo {$OUTLOOK_TIME,$OUTLOOK_TS} | tr ' ' , >> $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
 
 # Run PAS
+echo "Running PAS script on grib files"
 $PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA
 
 # Run the stat maker
