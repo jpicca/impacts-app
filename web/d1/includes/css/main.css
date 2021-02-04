@@ -38,3 +38,7 @@ table {
     font-size: 0.7rem;
 }
 
+.cell.max {
+    visibility: hidden;
+}
+

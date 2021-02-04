@@ -7,6 +7,8 @@ import geojson
 import pandas as pd
 import json
 
+from datetime import datetime, timedelta
+
 ### CLI Parser ###
 file_help = "The sim file to be used to create stats output."
 approot_help = "The path to the root of the impacts app."
@@ -69,6 +71,19 @@ def getDayIdx(file):
             return day2idx
         else:
             return 0
+
+def getValidDay(file):
+
+    file_base = str(file).split('/')[-1]
+    timestamp = file_base.split('.')[0] 
+    dayStr = timestamp[0:8]
+
+    if otlk_day == 2:
+
+        validDay = datetime.strptime(dayStr,"%Y%m%d") + timedelta(days=1)
+        dayStr = datetime.strftime(validDay,"%Y%m%d")
+
+    return (dayStr,timestamp)
 
 # Function to count tornadoes in each simulation
 def torCounter(df,filled_df):
@@ -337,4 +352,10 @@ with open(f'{outdir}/d{otlk_day}/includes/data/init/ind_tors.json', 'w') as fp:
 
 # Write master json data
 with open(f'{outdir}/d{otlk_day}/includes/data/init/data.json', 'w') as fp:
+    json.dump(masterDict, fp)
+
+# Write master json to archive
+valid, ts = getValidDay(f)
+
+with open(f'{outdir}/d{otlk_day}/includes/data/archive/data_v{valid}_{ts}.json', 'w') as fp:
     json.dump(masterDict, fp)

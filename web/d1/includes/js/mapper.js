@@ -429,10 +429,11 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
 })
 
 // Update the outlook time / day on the top row
-d3.csv('./includes/data/init/otlk.txt').then(data => {
+d3.csv('./includes/data/init/otlk.txt').then(function(data) {
    
     let otime = data.columns[0]
     let ots = data.columns[1]
+    let ody = data.columns[2]
 
     let year = ots.slice(0,4)
     let mo = ots.slice(4,6)
