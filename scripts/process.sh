@@ -22,11 +22,12 @@ N_SIMS=10000
 # either set current date to actual current date (first line) or set current date to custom date
 CURRENT_DATE=`date -u +"%Y%m%d"`
 CURRENT_DATE="20200318"
-echo $CURRENT_DATE
+echo "Today's date is... ${CURRENT_DATE}"
 
 # set current outlook time
 CURRENT_TIME=`date -u +"%H%M"`
 VALID_TIME="1630"
+DAY=$1
 
 # PYTHON SETUP
 PYTHON="/Users/josephpicca/opt/anaconda3/envs/impacts/bin/python"
@@ -34,57 +35,57 @@ SCRIPT_DIR="/scripts"
 SCRIPT=$SCRIPT_DIR"/pas.py"
 SCRIPT2=$SCRIPT_DIR"/makestats.py"
 SCRIPT3=$SCRIPT_DIR"/lsrpred.py"
+SCRIPT4=$SCRIPT_DIR"/prevOtlkFormatter.py"
 IMPACTS_DATA=$DIR_ROOT$SCRIPT_DIR"/impacts-data"
 
 INPUT=$DIR_ROOT"/data/outlooks"
 OUTLOOK_DIR=$INPUT"/impacts.pmarshwx.com/test-grib"
 
-# # Download data // ** This will need updating for when actual outlooks are acquired **
-# echo "Downloading D1 tornado outlook..."
-# curl $URL_ROOT$SUFFIX_TOR -o $D1_TOR
-# echo "Downloading D1 sig tornado outlook..."
-# curl $URL_ROOT$SUFFIX_SIG -o $D1_SIGTOR
-
 # Testing purposes -- download old outlooks as a test from pmarsh site
 TEST_URL_ROOT="http://impacts.pmarshwx.com/test-grib/"
 
 # Remove old outlook grib files
-echo "Removing old files..."
+#echo "Removing old files..."
 #rm -r $OUTLOOK_DIR
 #ls $OUTLOOK_DIR"/*"
 
-echo "Downloading outlook files..."
-#wget -r --no-parent -P $INPUT -A "*_day1_*"$CURRENT_DATE"*" $TEST_URL_ROOT
+#echo "Downloading outlook files..."
+#wget -r --no-parent -P $INPUT -A "*_day"$DAY"_*"$CURRENT_DATE"*" $TEST_URL_ROOT
 
-echo "Downloading d1 tornado outlook geojson..."
+#echo "Downloading tornado outlook geojson..."
 #wget -O $DIR_ROOT"/web/d1/includes/geo/test.geojson" https://www.spc.noaa.gov/products/outlook/day1otlk_torn.nolyr.geojson
 
-D1_TOR=`find $OUTLOOK_DIR -maxdepth 1 -type f -name "torn_day1_grib2_1630*"$CURRENT_DATE"*" | sort -nr | head -1`
-filename=`basename $D1_TOR`
-#echo $D1_TOR
+D_TOR=`find $OUTLOOK_DIR -maxdepth 1 -type f -name "torn_day"$DAY"_grib2_"$VALID_TIME"*"$CURRENT_DATE"*" | sort -nr | head -1`
+filename=`basename $D_TOR`
+#echo $D_TOR
 #echo $filename
 
 # Get outlook date and outlook time by splitting basename at underscore
 IFS="_" read -ra FILE_ARR <<< "$filename"
 OUTLOOK_TIME=${FILE_ARR[3]}
 OUTLOOK_TS=${FILE_ARR[4]}
+OUTLOOK_DY=${FILE_ARR[1]}
 
 # Copy the init data file (with nat/st/cwa quants to a new file)
 #cp $DIR_ROOT"/web/d1/includes/data/init/data.json" $DIR_ROOT"/web/d1/includes/data/init/data_prev.json"
 
+# Run the script that properly formats the prior outlook file (for colored tabular viz on the web page)
+echo "Formatting previous outlook file. Current outlook is... ${OUTLOOK_DY}, ${OUTLOOK_TIME}"
+$PYTHON $DIR_ROOT$SCRIPT4 -d $DAY -t $OUTLOOK_TIME -ts $OUTLOOK_TS -r $DIR_ROOT
+
 # Update outlook time file
 rm $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
-echo {$OUTLOOK_TIME,$OUTLOOK_TS} | tr ' ' , >> $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
+echo {$OUTLOOK_TIME,$OUTLOOK_TS,$OUTLOOK_DY} | tr ' ' , >> $DIR_ROOT"/web/d1/includes/data/init/otlk.txt"
 
 # Run PAS
-echo "Running PAS script on grib files"
-$PYTHON $DIR_ROOT$SCRIPT -f $D1_TOR -n $N_SIMS -p $IMPACTS_DATA
+#echo "Running PAS script on grib files"
+#$PYTHON $DIR_ROOT$SCRIPT -f $D_TOR -n $N_SIMS -p $IMPACTS_DATA
 
 # Run the stat maker
-$PYTHON $DIR_ROOT$SCRIPT2 -f $IMPACTS_DATA"/output/"$OUTLOOK_TS".psv.gz" -r $DIR_ROOT$SCRIPT_DIR
+$PYTHON $DIR_ROOT$SCRIPT2 -f $IMPACTS_DATA"/output/"$OUTLOOK_TS".psv.gz" -r $DIR_ROOT$SCRIPT_DIR -d $DAY
 
 # Run lsr feature engineering / prediction
-$PYTHON $DIR_ROOT$SCRIPT3 -r $DIR_ROOT -f $filename -i $IMPACTS_DATA"/pas-input-data"
+#$PYTHON $DIR_ROOT$SCRIPT3 -r $DIR_ROOT -f $filename -i $IMPACTS_DATA"/pas-input-data"
 
 
 
