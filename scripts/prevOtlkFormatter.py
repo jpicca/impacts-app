@@ -5,6 +5,7 @@ import os
 
 import argparse
 import csv
+import json
 
 from datetime import datetime,timedelta
 
@@ -45,7 +46,11 @@ def getForecastDay(daysBack,fcst):
             files = glob.glob(f'{filedir_d1}/archive/*_{forecastDay}*')
 
         # Get the most recent file for that forecast day
-        latest = max(files,key=os.path.getctime)
+        try:
+            latest = max(files,key=os.path.getctime)        
+        except ValueError:
+            # Set a dummy file with an old date
+            latest = 'data_v20000101_20000101120000.json'
 
         # Get the basename of the file
         filename = os.path.basename(latest)
@@ -65,7 +70,11 @@ def getForecastDay(daysBack,fcst):
         files = glob.glob(f'{filedir_d2}/archive/*_{forecastDay}*')
 
         # Get the most recent file for that forecast day
-        latest = max(files,key=os.path.getctime)
+        try:
+            latest = max(files,key=os.path.getctime)        
+        except ValueError:
+            # Set a dummy file with an old date
+            latest = 'data_v20000101_20000101120000.json'
 
         # Get the basename of the file
         filename = os.path.basename(latest)
@@ -77,38 +86,6 @@ def getForecastDay(daysBack,fcst):
         hour = ts[8:12]
 
         return (date,hour,latest)
-
-print(getForecastDay(0,day))
-
-# d1_day,d1_time,d1_latest = getForecastDay(0,day)
-# d2_day,d2_time,d2_latest = getForecastDay(1,day)
-
-# Get dates of previous day 1 and day 2 runs
-# with open(f'{filedir_d1}/otlk.txt') as file:
-#     reader = csv.reader(file, delimiter=',')
-#     for row in reader:
-#         time_d1, ts_d1, _ = row
-
-# with open(f'{filedir_d2}/otlk.txt') as file:
-#     reader = csv.reader(file, delimiter=',')
-#     for row in reader:
-#         time_d2, ts_d2, _ = row
-
-
-# d1_date = datetime.strptime(f'{d1_day}-{d1_time}','%Y%m%d-%H%M')
-# d2_date = datetime.strptime(f'{d2_day}-{d2_time}','%Y%m%d-%H%M')
-
-# print(f"The current outlook time: {cur_otlk_date}")
-# print(f"The prev d1 outlook time: {d1_date}")
-# print(f"The prev d2 outlook time: {d2_date}")
-
-
-# d1_diff_hr = (cur_otlk_date - d1_date).total_seconds()/3600
-# d2_diff_hr = (cur_otlk_date - d2_date).total_seconds()/3600
-
-# print(f'The d1 difference is {d1_diff_hr} hours')
-# print(f'The d2 difference is {d2_diff_hr} hours')
-
 
 
 # Based upon the day/time combo, make necessary changes to previous outlook stats file
@@ -161,7 +138,7 @@ else:
 
             print('Using empty prev file!')
             # Write out file
-            with open(f'{filedir_d1}/data_prev.json', 'w') as fp:
+            with open(f'{filedir_d1}/init/data_prev.json', 'w') as fp:
                 json.dump({}, fp)
 
         else:
@@ -179,7 +156,7 @@ else:
 
                 print('Using empty prev file!')
                 # Write out file
-                with open(f'{filedir_d1}/data_prev.json', 'w') as fp:
+                with open(f'{filedir_d1}/init/data_prev.json', 'w') as fp:
                     json.dump({}, fp)
 
             else:
@@ -201,7 +178,7 @@ else:
             if d2_diff_hr > 34.5 + tbuf:
 
                 print('Using empty prev file!')
-                with open(f'{filedir_d1}/data_prev.json', 'w') as fp:
+                with open(f'{filedir_d1}/init/data_prev.json', 'w') as fp:
                     json.dump({}, fp)
 
             else:
@@ -222,7 +199,7 @@ else:
             if d2_diff_hr > 38 + tbuf:
 
                 print('Using empty prev file!')
-                with open(f'{filedir_d1}/data_prev.json', 'w') as fp:
+                with open(f'{filedir_d1}/init/data_prev.json', 'w') as fp:
                     json.dump({}, fp)
 
             else:

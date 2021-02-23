@@ -24,7 +24,7 @@ export function tablePopulate(entry,prev,attr='title') {
         oldValArr = prev[0]['population']
     } catch(err) {
         console.log('No previous data for this location')
-        oldValArr = [0,0,0,0,0]
+        //oldValArr = [0,0,0,0,0]
         isOld = false;
     }
 
@@ -39,13 +39,9 @@ export function tablePopulate(entry,prev,attr='title') {
                 let valArr = entry[0][key][0]
                 let climoArr = entry[0][key][1]
                 
-                if (isOld) {oldValArr = prev[0][key][0]}
-                
-                // try {
-                //     oldValArr = prev[0][key][0]
-                // } catch(err) {
-                //     console.log('No prev data for this selection!')
-                // }
+                // If there are no previous data, just set the old data to the current data so we don't light up
+                // the colors
+                if (isOld) {oldValArr = prev[0][key][0]} else { oldValArr = entry[0][key][0] }
 
                 percList.forEach(function(e,i) {
 
@@ -84,15 +80,6 @@ export function tablePopulate(entry,prev,attr='title') {
                     })
 
                     formatTextCol(cell,backCol)
-                    // http://www.w3.org/TR/AERT#color-contrast
-                    // Tiny algorithm to determine if text color should be white or black
-                    // let brightness = Math.round(((parseInt(d3.rgb(backCol).r) * 299) +
-                    // (parseInt(d3.rgb(backCol).g) * 587) +
-                    // (parseInt(d3.rgb(backCol).b) * 114)) / 1000);
-                    // let textColour = (brightness > 125) ? 'black' : 'white';
-
-                    // cell.style('color', textColour)
-                    //console.log(`Perc: ${e}, Impact: ${key} `)
                     
                 })
 

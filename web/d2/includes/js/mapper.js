@@ -13,20 +13,27 @@ var outlook;
 if (testing) {
     outlook = d3.json('./includes/geo/outlook.geojson');
 } else {
-    outlook = d3.json('./includes/geo/day1otlk_20200419.geojson');
+    outlook = d3.json('./includes/geo/day2_torn.geojson');
+    //outlook = d3.json('./includes/geo/test.geojson')
 }
 
 Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
             outlook,
             d3.json('./includes/geo/cwa.json'),
             initData,
-            d3.json('./includes/data/init/ind_tors.json')]).then(function(files) {
+            d3.json('./includes/data/init/ind_tors.json'),
+            d3.json('./includes/data/init/ml-lsr.json'),
+            d3.json('./includes/geo/cities_100.json')
+        ]).then(function(files) {
 
     var us = files[0];
     var outlooks = files[1];
     var cwa = files[2];
     var starterData = files[3];
     var natTors = files[4];
+    var mlPreds = files[5];
+    var cities = files[6];
+
     var mapWidthScaler = 1;
     var mapHeightScaler = 1;
 
@@ -44,6 +51,17 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
         'height': height
     };
 
+    // Update outlook date
+    let validtime = outlooks['features'][0]['properties']['ISSUE']
+
+    let year = validtime.slice(0,4)
+    let mo = validtime.slice(4,6)
+    let day = validtime.slice(6,8)
+    let otime = validtime.slice(8,12)
+    
+    d3.select('#otlk-title').text(`IMPACTS Dashboard (Day 2) // Update: ${mo}/${day}/${year}, ${otime}Z `)
+
+
     var projection = d3.geoAlbersUsa()
         .scale(dims.width/mapWidthScaler)
         .translate([dims.width/(mapWidthScaler*2),dims.height/(mapHeightScaler*2)]);
@@ -58,13 +76,22 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
     // Zoom testings
 
     const zoom = d3.zoom()
-        .scaleExtent([1,8])
+        .scaleExtent([1,10])
         .on("zoom", zoomed);
 
     function zoomed(event) {
+        
         const {transform} = event;
+        
         g.attr("transform", transform);
         g.attr("stroke-width", 1 / transform.k);
+
+        citiesG.attr("transform", transform);
+        //ciLabelsG.attr("transform", transform);
+        d3.selectAll('.city')
+            .attr("r", 1.5 / transform.k)
+            .attr("stroke-width", 1 / transform.k)
+            //.attr("font-size", 5 / transform.k);                
 
         statesG.attr("transform", transform);
         statesG.attr("stroke-width", 1 / transform.k);
@@ -182,6 +209,27 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
             .classed('st',true)
             .attr('id', d => { return stateDict[d.properties.name]})
 
+    
+
+    // let ciLabelsG = d3.select('svg')
+    //                     .append('g')
+
+    // ciLabelsG.selectAll('.ci-label')
+    //         .data(cities)
+    //         .join('text')
+    //         .attr('x', city => {
+    //             return projection([city.longitude,city.latitude])[0]
+    //         })
+    //         .attr('y', city => {
+    //             return projection([city.longitude,city.latitude])[1]
+    //         })
+    //         //.attr('r','0.3px')
+    //         //.attr('fill','black')
+    //         .text(d => d.city)
+    //         .attr('font-size','0.2rem')
+    //         .attr('class','ci-label')
+    //         .classed('city', true)
+
     let warnAreasG = d3.select('svg')
                     .append('g')
 
@@ -193,7 +241,7 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
             .attr('stroke-width',0.3)
             .attr('stroke','#000')
             .attr('fill', d => {
-                // .population[0][2] is currently the 90th percentile -- *** make sure to change!! ***
+                
                 try {
                     let abbrev = d.properties.CWA
                     let filtered = starterData.cwas.filter(entry => entry.cwa == abbrev)
@@ -213,6 +261,27 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
             .attr('id', d => d.properties.CWA )
             .attr('data-toggle','tooltip')
             .attr('title', d => d.properties.CWA)
+
+    let citiesG = d3.select('svg')
+            .append('g')
+
+    citiesG.selectAll('.ci')
+        .data(cities)
+        .join('circle')
+        .attr('cx', city => {
+            return projection([city.longitude,city.latitude])[0]
+        })
+        .attr('cy', city => {
+            return projection([city.longitude,city.latitude])[1]
+        })
+        .attr('r',1.5)
+        .attr('fill','white')
+        .attr('stroke','black')
+        .attr('stroke-width','0.5px')
+        .attr('class','ci')
+        .classed('city', true)
+        .attr('data-toggle','tooltip')
+        .attr('title', d => d.city)
 
     let svgTitle = d3.select('svg')
             .append('g')
@@ -264,8 +333,25 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
         .attr('stroke-width',0.5)
         .attr('stroke','#000')
         .attr('visibility','hidden')
+        .attr('stroke-linecap','round')
         .attr('data-toggle','tooltip')
         .attr('title', d => d.impactCount)
+
+    // torPathHolder.selectAll('.tor-symbols')
+    //     .data(torPaths['init'])
+    //     .join('circle')
+    //     .attr("class", d => `${d.percentile} ${d.impact}`)
+    //     .classed('tor-symbols nat',true)
+    //     .attr('visibility','hidden')
+    //     .attr('data-toggle','tooltip')
+    //     .attr('title', d => d.impactCount)
+    //     .attr('r','1px')
+    //     .attr('cx', d => {
+    //         return projection(d.coordinates[0])[0]
+    //     })
+    //     .attr('cy', d => {
+    //         return projection(d.coordinates[0])[1]
+    //     })
 
     svgTitle.append('text')
         .classed('title-text', true)
@@ -338,7 +424,7 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
 
     svg.call(zoom);
 
-    var interaction = interact(torPaths,path)
+    var interaction = interact(torPaths,path,mlPreds)
 
     interaction.highlight(d3.selectAll('.st'))
         .highlight(d3.selectAll('.cwa'))
@@ -352,4 +438,20 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
     
 
 })
+
+// Update the outlook time / day on the top row
+// d3.csv('./includes/data/init/otlk.txt').then(function(data) {
+   
+//     let otime = data.columns[0]
+//     let ots = data.columns[1]
+//     let ody = data.columns[2]
+
+//     let year = ots.slice(0,4)
+//     let mo = ots.slice(4,6)
+//     let day = ots.slice(6,8)
+    
+//     d3.select('#otlk-title').text(`IMPACTS Dashboard (Day 1) // Update: ${mo}/${day}/${year}, ${otime}Z `)
+
+// })
+
 

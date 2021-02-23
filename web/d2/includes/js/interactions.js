@@ -1,9 +1,9 @@
-import initData from './charts.js';
-import { natTableProcess, stateDict } from './helper.js';
+import initData, { prevData, quantFormatter } from './charts.js';
+import { natTableProcess, tablePopulate, stateDict } from './helper.js';
 import { fillColorDict } from './const.js'
 import histChart from './plotBase.js'
 
-export function interact(torPaths,path) {
+export function interact(torPaths,path,preds) {
 
     var exports = {};
 
@@ -12,18 +12,37 @@ export function interact(torPaths,path) {
         'selSims':[],
         'states':[],
         'cwas':[],
-        'natQuantiles': {}
+        'natQuantiles': {},
+        'nationals':[]
+    }
+
+    exports.prevars = {
+        'nationals': [],
+        'states': [],
+        'cwas': []
     }
 
     // Load the sims from the initial data file into our exports dict 
     // THis includes individual sim data on national scale
     // and summary stats (quantiles) on states/cwas for map filling
-    Promise.resolve(initData).then(data => {
+    //Promise.resolve(initData).then(data => {
+    Promise.all([initData,prevData]).then(data => {
 
-        exports.vars.sims = data.sims;
-        exports.vars.states = data.states;
-        exports.vars.cwas = data.cwas;
-        exports.vars.natQuantiles = data.natQuantiles;
+        let init = data[0]
+        let prev = data[1]
+
+        exports.vars.sims = init.sims;
+        exports.vars.states = init.states;
+        exports.vars.cwas = init.cwas;
+        exports.vars.natQuantiles = init.natQuantiles;
+        exports.vars.nationals = init.national;
+
+        //console.log(prev)
+        exports.prevars.nationals = prev.national;
+        exports.prevars.states = prev.states;
+        exports.prevars.cwas = prev.cwas;
+
+        //console.log(exports.prevars)
         
     })
 
@@ -88,6 +107,9 @@ export function interact(torPaths,path) {
 
                     d3.select('#cur-val-table').text(`CWA: ${id}`)
 
+                    // Update hail/wind text
+                    this.updatePreds(id)
+
                     this.updateTable('cwas')
 
                     break;
@@ -99,6 +121,42 @@ export function interact(torPaths,path) {
         }.bind(this))
         
         return this;    
+    }
+
+    // Function to update hail/wind predictions
+    exports.updatePreds = function(id) {
+
+        let hailcell = d3.select('#exp-hail')
+        let windcell = d3.select('#exp-wind')
+
+        if (preds[id]) {
+
+            let hailcast = preds[id]["hail"]['forecast']
+            let windcast = preds[id]["wind"]['forecast']
+            let hailclim = preds[id]["hail"]['climo']
+            let windclim = preds[id]["wind"]['climo']
+
+            hailcell.text(`Hail: ${hailcast} Reports`)
+            windcell.text(`Wind: ${windcast} Reports`)
+
+            hailcell.attr('data-original-title',() => {
+
+                return `This is ${(hailcast/hailclim).toFixed(1)}x normal for hail
+                days this time of year.`;
+            })
+
+            windcell.attr('data-original-title',() => {
+
+                return `This is ${(windcast/windclim).toFixed(1)}x normal for wind
+                days this time of year.`;
+            })
+
+        } else {
+            hailcell.text('No Predicted Reports and/or CWA/State not included at this time.')
+            windcell.text('No Predicted Reports and/or CWA/State not included at this time.')
+        }
+
+        
     }
 
     exports.menuChange = function(selection) {
@@ -114,6 +172,9 @@ export function interact(torPaths,path) {
 
                     if (val == 'cwa') {
 
+                        // Update the expected LSR
+                        this.updatePreds($('#c-choice').val())
+
                         // Update the selected var and the table title
                         // this.vars.selected = $('#c-choice').val()
                         d3.select('#cur-val-table').text(`CWA: ${$('#c-choice').val()}`)
@@ -121,13 +182,15 @@ export function interact(torPaths,path) {
                         d3.select('#prob-dist-title')
                             .text(`Probablity Distributions (${$('#c-choice').val()})`)
 
-                        // Update the table values
-                        this.updateTable('cwas')
-
                         // Load new data file for whatever is the active CWA
                         this.loadData(`./includes/data/followup/${$('#c-choice').val()}_data.csv`);
 
                         this.loadPathData($('#c-choice').val());
+
+                        // Update the table values
+                        this.updateTable('cwas')
+
+
 
                         // Control what menu is shown
                         d3.select('#state-choice').style('display','none')
@@ -152,6 +215,9 @@ export function interact(torPaths,path) {
                         }
 
                     } else if (val == 'st') {
+
+                        // Update the expected LSR
+                        this.updatePreds($('#st-choice').val())
 
                         // Update the selected var and the table title
                         // this.vars.selected = $('#st-choice').val()
@@ -192,20 +258,11 @@ export function interact(torPaths,path) {
 
                     } else {
 
-                        // Update table for national stats
-                        // let statsDict = this.vars.natQuantiles;
+                        // Update the expected LSR
+                        this.updatePreds('nat')
 
-                        // Object.keys(statsDict).forEach(function(key) {
-                        //     Object.keys(statsDict[key]).forEach(function(innerKey) {
-                    
-                        //         //console.log(`.t${key}.${innerKey}`)
-                    
-                        //         d3.select(`.t${key}.${innerKey}`).text((+statsDict[key][innerKey]).toFixed())
-                    
-                        //     })
-                        // })
-
-                        this.updateTable('national')
+                        //this.updateTable('national')
+                        this.updateTable('nationals')
 
                         // this.vars.selected = val;
                         d3.select('#cur-val-table').text(`National`)
@@ -246,6 +303,9 @@ export function interact(torPaths,path) {
 
                 case 'st-choice':
 
+                    // Update the expected LSR
+                    this.updatePreds($('#st-choice').val())
+
                     // this.vars.selected = val;
                     d3.select('#cur-val-table').text(`State: ${val}`)
 
@@ -260,6 +320,9 @@ export function interact(torPaths,path) {
                     break;
 
                 case 'c-choice':
+
+                    // Update the expected LSR
+                    this.updatePreds($('#c-choice').val())
 
                     // this.vars.selected = val;
                     d3.select('#cur-val-table').text(`CWA: ${val}`)
@@ -406,6 +469,7 @@ export function interact(torPaths,path) {
                 .attr('d',path)
                 .attr("class", d => `${d.percentile} ${d.impact}`)
                 .classed(`tor-paths ${loc}`,true)
+                .attr('stroke-linecap','round')
                 .attr('stroke-width',0.5)
                 .attr('stroke','#000')
                 .attr('visibility','hidden')
@@ -419,7 +483,8 @@ export function interact(torPaths,path) {
             // New state/cwa tor path loader
             if (!Object.keys(torPaths['followup']).includes(loc)) {
                 d3.json(`./includes/data/followup/${loc}_ind_tors.json`)
-                    .then(data => {
+                    .then((data) => {
+
                         torPaths['followup'][loc] = []
 
                         Object.keys(data).forEach(outerKey => {
@@ -446,6 +511,7 @@ export function interact(torPaths,path) {
                             .attr('d',path)
                             .attr("class", d => `${d.percentile} ${d.impact}`)
                             .classed(`tor-paths ${loc}`,true)
+                            .attr('stroke-linecap','round')
                             .attr('stroke-width',0.5)
                             .attr('stroke','#000')
                             .attr('visibility','hidden')
@@ -464,6 +530,7 @@ export function interact(torPaths,path) {
                     .attr('d',path)
                     .attr("class", d => `${d.percentile} ${d.impact}`)
                     .classed(`tor-paths ${loc}`,true)
+                    .attr('stroke-linecap','round')
                     .attr('stroke-width',0.5)
                     .attr('stroke','#000')
                     .attr('visibility','hidden')
@@ -495,17 +562,52 @@ export function interact(torPaths,path) {
                 pow.push(entry[3])
             })
 
-            var newPop = new histChart();
-            newPop.makeChart(pop,'#pop-chart',false);
+            var popChart = new histChart();
+            var hospChart = new histChart();
+            var mobChart = new histChart();
+            var powChart = new histChart();
 
-            var newHosp = new histChart();
-            newHosp.makeChart(h,'#hosp-chart',false);
+            if (this.vars.sims.length) {
 
-            var newMob = new histChart();
-            newMob.makeChart(m,'#mob-chart',false);
+                popChart.makeChart(quantFormatter(pop), '#pop-chart')
+                // popChart.makeChart(pop, '#pop-chart')
 
-            var newPow = new histChart();
-            newPow.makeChart(pow,'#pow-chart',false);
+                
+                //let hospNine = h.filter(val => val < d3.quantile(h,0.9))
+                hospChart.makeChart(quantFormatter(h), '#hosp-chart')
+                //hospChart.makeChart(h,'#hosp-chart')
+
+                
+                mobChart.makeChart(quantFormatter(m), '#mob-chart', true)
+                // mobChart.makeChart(m, '#mob-chart')
+
+                //console.log(d3.max(quantFormatter(pow)))
+                powChart.makeChart(quantFormatter(pow), '#pow-chart')
+                // powChart.makeChart(pow,'#pow-chart')
+            
+            } else {
+
+                console.log('There are no simulated tors')
+
+                // Remove svg if it exists and add a banner about no tornadoes
+                //let containers = d3.selectAll('.chart');
+                containers.select('svg').remove();
+                containers.append('h4').text('No simulated tornadoes')
+            }   
+
+            // var newPop = new histChart();
+            // //newPop.makeChart(pop,'#pop-chart',false);
+            // newPop.makeChart(quantFormatter(pop),'#pop-chart',false);
+
+            // var newHosp = new histChart();
+            // newHosp.makeChart(quantFormatter(h),'#hosp-chart',false);
+
+            // var newMob = new histChart();
+            // newMob.makeChart(quantFormatter(m,0.9,true),'#mob-chart',false);
+
+            // var newPow = new histChart();
+            // //newPow.makeChart(pow,'#pow-chart',false);
+            // newPow.makeChart(quantFormatter(pow),'#pow-chart',false);
 
             return;
 
@@ -533,16 +635,19 @@ export function interact(torPaths,path) {
             this.updateThresh(this.vars.selSims);
 
             var newPop = new histChart();
-            newPop.makeChart(pop,'#pop-chart',false);
+            // newPop.makeChart(pop,'#pop-chart',false);
+            newPop.makeChart(quantFormatter(pop),'#pop-chart',false);
             
             var newHosp = new histChart();
-            newHosp.makeChart(h,'#hosp-chart',false);
+            newHosp.makeChart(quantFormatter(h),'#hosp-chart',false);
 
             var newMob = new histChart();
-            newMob.makeChart(m,'#mob-chart',false);
+            //newMob.makeChart(m,'#mob-chart',false);
+            newMob.makeChart(quantFormatter(m,0.9,true),'#mob-chart',false);
 
             var newPow = new histChart();
-            newPow.makeChart(pow,'#pow-chart',false);
+            //newPow.makeChart(pow,'#pow-chart',false);
+            newPow.makeChart(quantFormatter(pow),'#pow-chart',false);
 
         }.bind(this)).catch(function(err) {
             console.log('No file!')
@@ -586,7 +691,7 @@ export function interact(torPaths,path) {
 
         // Update text on page
         d3.select('#context-jumbo')
-            .text(`At least ${thresh} ${arrayMapper[$('#prod').val()][1]} were exposed in 
+            .text(`At least ${thresh} ${arrayMapper[$('#prod').val()][1]} were exposed to a tornado in 
             ${count} of 10k simulations (${(count/100).toFixed(1)} %)`)
             //.text(`${count} of 10k simulations (${(count/100).toFixed(1)} %) impacted at least
             //${thresh} ${arrayMapper[$('#prod').val()][1]}.`)
@@ -621,6 +726,8 @@ export function interact(torPaths,path) {
             region = $('#st-choice').val() 
         } else if (level == 'cwas') {
             region = $('#c-choice').val() 
+        } else if (level == 'nationals') { 
+            region = 'national'
         } else {
             // console.log('National!')
             Promise.resolve(initData).then(data => natTableProcess(data,'data-original-title'))
@@ -630,15 +737,36 @@ export function interact(torPaths,path) {
 
         //console.log(`This is updateTable: ${region}`)
 
-        const percList = ['min','ten','med','ninety','max'];
+        //const percList = ['min','ten','med','ninety','max'];
 
         // Get data from var holder
-        let filtered = this.vars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
-        
+        let filtered;
+        let filt_prev;
+
+        // Check if there are any current data for this selection
+        try {
+            filtered = this.vars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
+        } catch(err) { 
+        //console.log(filt_prev)
+            filtered = null;
+        }
+
+        // Check if there are any previous data for this selection
+        try {
+            filt_prev = this.prevars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
+        } catch(err) {
+            filt_prev = null;
+        }
+
+        tablePopulate(filtered,filt_prev,'data-original-title')
+
+        /*
         try {
 
             Object.keys(filtered[0]).forEach(function(key) {
-                if ((key != 'state') && (key != 'cwa')) { 
+
+                if (!['state','cwa','national'].includes(key)) {
+                //if ((key != 'state') && (key != 'cwa') && (key != 'national')) { 
 
                     let valArr = filtered[0][key][0]
                     let climoArr = filtered[0][key][1]
@@ -707,7 +835,7 @@ export function interact(torPaths,path) {
                 .text(0)
     
 
-        }
+        }*/
         
     }
 
@@ -725,16 +853,16 @@ export function interact(torPaths,path) {
 
         }
 
-        d3.selectAll('.cell')
-            .style('background-color', '#fff')
+        //d3.selectAll('.cell')
+        //    .style('background-color', '#fff')
 
         // Hide contours
         // d3.selectAll('.contours')
         //     .attr('visibility','hidden')
 
         // Highlight appropriate column
-        d3.selectAll(`.t${val}`)
-            .style('background-color','rgba(187, 181, 181, 0.3)')
+        //d3.selectAll(`.t${val}`)
+        //    .style('background-color','rgba(187, 181, 181, 0.3)')
 
     }
 
