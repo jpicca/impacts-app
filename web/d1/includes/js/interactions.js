@@ -182,13 +182,15 @@ export function interact(torPaths,path,preds) {
                         d3.select('#prob-dist-title')
                             .text(`Probablity Distributions (${$('#c-choice').val()})`)
 
-                        // Update the table values
-                        this.updateTable('cwas')
-
                         // Load new data file for whatever is the active CWA
                         this.loadData(`./includes/data/followup/${$('#c-choice').val()}_data.csv`);
 
                         this.loadPathData($('#c-choice').val());
+
+                        // Update the table values
+                        this.updateTable('cwas')
+
+
 
                         // Control what menu is shown
                         d3.select('#state-choice').style('display','none')
@@ -560,19 +562,46 @@ export function interact(torPaths,path,preds) {
                 pow.push(entry[3])
             })
 
-            var newPop = new histChart();
-            //newPop.makeChart(pop,'#pop-chart',false);
-            newPop.makeChart(quantFormatter(pop),'#pop-chart',false);
+            var popChart = new histChart();
+            var hospChart = new histChart();
+            var mobChart = new histChart();
+            var powChart = new histChart();
 
-            var newHosp = new histChart();
-            newHosp.makeChart(quantFormatter(h),'#hosp-chart',false);
+            if (this.vars.sims.length) {
 
-            var newMob = new histChart();
-            newMob.makeChart(quantFormatter(m,0.9,true),'#mob-chart',false);
+                popChart.makeChart(quantFormatter(pop), '#pop-chart')
+                
+                //let hospNine = h.filter(val => val < d3.quantile(h,0.9))
+                hospChart.makeChart(quantFormatter(h), '#hosp-chart')
+                
+                mobChart.makeChart(quantFormatter(m), '#mob-chart', true)
 
-            var newPow = new histChart();
-            //newPow.makeChart(pow,'#pow-chart',false);
-            newPow.makeChart(quantFormatter(pow),'#pow-chart',false);
+                //console.log(d3.max(quantFormatter(pow)))
+                powChart.makeChart(quantFormatter(pow), '#pow-chart')
+            
+            } else {
+
+                console.log('There are no simulated tors')
+
+                // Remove svg if it exists and add a banner about no tornadoes
+                //let containers = d3.selectAll('.chart');
+                containers.select('svg').remove();
+                containers.append('h4').text('No simulated tornadoes')
+            }   
+
+            // var newPop = new histChart();
+            // //newPop.makeChart(pop,'#pop-chart',false);
+            // newPop.makeChart(quantFormatter(pop),'#pop-chart',false);
+
+            // var newHosp = new histChart();
+            // newHosp.makeChart(quantFormatter(h),'#hosp-chart',false);
+
+            // var newMob = new histChart();
+            // newMob.makeChart(quantFormatter(m,0.9,true),'#mob-chart',false);
+
+            // var newPow = new histChart();
+            // //newPow.makeChart(pow,'#pow-chart',false);
+            // newPow.makeChart(quantFormatter(pow),'#pow-chart',false);
 
             return;
 
@@ -705,11 +734,26 @@ export function interact(torPaths,path,preds) {
         //const percList = ['min','ten','med','ninety','max'];
 
         // Get data from var holder
-        let filtered = this.vars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
-        let filt_prev = this.prevars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
-        console.log(filt_prev)
+        let filtered;
+        let filt_prev;
+
+        // Check if there are any current data for this selection
+        try {
+            filtered = this.vars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
+        } catch(err) { 
+        //console.log(filt_prev)
+            filtered = null;
+        }
+
+        // Check if there are any previous data for this selection
+        try {
+            filt_prev = this.prevars[level].filter(function(entry) {return entry[`${level.slice(0,-1)}`] == region })
+        } catch(err) {
+            filt_prev = null;
+        }
+
         tablePopulate(filtered,filt_prev,'data-original-title')
-        
+
         /*
         try {
 

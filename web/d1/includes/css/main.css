@@ -38,7 +38,7 @@ table {
     font-size: 0.7rem;
 }
 
-.cell.max {
-    visibility: hidden;
+.cell.max, .cell.min {
+    display: none
 }
 

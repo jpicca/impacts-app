@@ -135,12 +135,12 @@ ind_torDict = {}
 # Read data into dataframe
 try:
     df = pd.read_csv(f, sep="|")
-except EmptyDataError:
+except pd.errors.EmptyDataError:
     import sys
     print("The sims file is empty (presumably due to there being no simulated tornadoes).")
 
     # Fill out the national quantiles with 0s
-    for impact in ['population','hospitals','mobilehomes','psubstations']:
+    for impact in ['population','hospitals','mobilehomes','psubstations','tors']:
         masterDict['national'][0][impact] = [[0,0,0,0,0]]
 
     getClimo()

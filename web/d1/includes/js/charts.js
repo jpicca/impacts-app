@@ -26,16 +26,6 @@ export function quantFormatter(data,quant=0.9,isMob=false) {
         return data.filter(val => val < quant_adj)
     }
 
-    // let perc = d3.quantile(data,quant)
-
-    // console.log(perc)
-
-    // if (perc < 10) {
-    //     return data
-    // } else {
-    //     return data.filter(val => val < perc)
-    // }
-
 }
 
 export var prevData = d3.json('./includes/data/init/data_prev.json').then(function(impacts) {
@@ -57,23 +47,41 @@ export default d3.json('./includes/data/init/data.json').then(function(impacts) 
         tor.push(entry[4])
     })
 
+    //console.log(impacts)
+
     var popChart = new histChart();
-    popChart.makeChart(quantFormatter(pop), '#pop-chart')
-    // popChart.makeChart(pop, '#pop-chart')
-
     var hospChart = new histChart();
-    //let hospNine = h.filter(val => val < d3.quantile(h,0.9))
-    hospChart.makeChart(quantFormatter(h), '#hosp-chart')
-    //hospChart.makeChart(h,'#hosp-chart')
-
     var mobChart = new histChart();
-    mobChart.makeChart(quantFormatter(m), '#mob-chart', true)
-    // mobChart.makeChart(m, '#mob-chart')
-
     var powChart = new histChart();
-    //console.log(d3.max(quantFormatter(pow)))
-    powChart.makeChart(quantFormatter(pow), '#pow-chart')
-    // powChart.makeChart(pow,'#pow-chart')
+
+    if (impacts.sims.length) {
+
+        popChart.makeChart(quantFormatter(pop), '#pop-chart')
+        // popChart.makeChart(pop, '#pop-chart')
+
+        
+        //let hospNine = h.filter(val => val < d3.quantile(h,0.9))
+        hospChart.makeChart(quantFormatter(h), '#hosp-chart')
+        //hospChart.makeChart(h,'#hosp-chart')
+
+        
+        mobChart.makeChart(quantFormatter(m), '#mob-chart', true)
+        // mobChart.makeChart(m, '#mob-chart')
+
+        
+        //console.log(d3.max(quantFormatter(pow)))
+        powChart.makeChart(quantFormatter(pow), '#pow-chart')
+        // powChart.makeChart(pow,'#pow-chart')
+    
+    } else {
+
+        console.log('There are no simulated tors')
+
+        // Remove svg if it exists and add a banner about no tornadoes
+        let containers = d3.selectAll('.chart');
+        containers.select('svg').remove();
+        containers.append('h4').text('No simulated tornadoes')
+    }
 
     // Get quantile data for table
     let masterArr = [pop,h,m,pow,tor];
@@ -97,4 +105,4 @@ export default d3.json('./includes/data/init/data.json').then(function(impacts) 
 
     return initData;
     
-});
+})

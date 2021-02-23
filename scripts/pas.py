@@ -14,6 +14,7 @@ import pygrib as pg
 
 ### CLI Parser ###
 file_help = "The NDFD file to use as a probability grid."
+ftype_help = "If we're using a grib file or an npz file"
 area_help = "The area of a single NDFD grid cell (in kilometers)."
 nsim_help = "The number of simulations to run. Default is 10,000."
 tdir_help = "The mean storm direction. Used as bandwidth to normal distribution. Default is 50 degrees."
@@ -25,6 +26,7 @@ tsdenom_help = "The denominator (1/n) for how often to sample the triple sig dis
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--file", required=True, help=file_help)
+parser.add_argument("-ig", "--isgrib", required=False, default=True, help=ftype_help)
 parser.add_argument("-a", "--area", required=False, default=25, help=area_help)
 parser.add_argument("-n", "--nsims", required=False, default=10000, type=int, help=nsim_help)
 parser.add_argument("-d", "--direction", required=False, default=50, type=float, help=tdir_help)
@@ -68,33 +70,60 @@ def read_ndfd_grib_file(grbfile):
 
 ### Setup Simulation ###
 # Determine Date/Time of outlook from filename
-date_in_name = ndfd_file.name.split("_")[-1]
-dt = datetime.datetime.strptime(date_in_name, "%Y%m%d%H%M%S")
-outfile = outdir.joinpath(f"{dt.strftime('%Y%m%d%H%M%S')}.psv.gz")
+if int(args.isgrib):
+    date_in_name = ndfd_file.name.split("_")[-1]
+    dt = datetime.datetime.strptime(date_in_name, "%Y%m%d%H%M%S")
+    outfile = outdir.joinpath(f"{dt.strftime('%Y%m%d%H%M%S')}.psv.gz")
 
-# Read Tornado File; Extend to thunder (if chosen) and create continuous grid
-torn = read_ndfd_grib_file(ndfd_file)
+    # Read Tornado File; Extend to thunder (if chosen) and create continuous grid
+    torn = read_ndfd_grib_file(ndfd_file)
 
-# Read Tornado File; Extend to thunder (if chosen) and create continuous grid
-torn = read_ndfd_grib_file(ndfd_file)
-if args.cat:
-    cat = read_ndfd_grib_file(ndfd_file.with_name(ndfd_file.name.replace("torn", "cat")))
-    cat[cat > 0] = 1
-    torn[torn < 2] = cat[torn < 2]
-try:
-    continuous_torn = dc.make_continuous(torn)
-except ValueError:
-    import sys
-    if torn.max() == 0:
-        with gzip.GzipFile(outfile, "w") as OUT:
-            OUT.write("".encode())
-        sys.exit(0)
-    else:
-        print("There was an uncaught error converting to continuous probabilities. Exiting...")
-        sys.exit(1)
+    # Read Tornado File; Extend to thunder (if chosen) and create continuous grid
+    torn = read_ndfd_grib_file(ndfd_file)
+    if args.cat:
+        cat = read_ndfd_grib_file(ndfd_file.with_name(ndfd_file.name.replace("torn", "cat")))
+        cat[cat > 0] = 1
+        torn[torn < 2] = cat[torn < 2]
+    try:
+        continuous_torn = dc.make_continuous(torn)
+    except ValueError:
+        import sys
+        if torn.max() == 0:
+            with gzip.GzipFile(outfile, "w") as OUT:
+                OUT.write("".encode())
+            sys.exit(0)
+        else:
+            print("There was an uncaught error converting to continuous probabilities. Exiting...")
+            sys.exit(1)
 
-# Read/Create Single and Double Sig Grids
-sigtorn = read_ndfd_grib_file(ndfd_file.with_name(ndfd_file.name.replace("torn", "sigtorn"))).astype(int)
+    # Read/Create Single and Double Sig Grids
+    sigtorn = read_ndfd_grib_file(ndfd_file.with_name(ndfd_file.name.replace("torn", "sigtorn"))).astype(int)
+
+# If we're using an npz file **** Testing right now *****
+else:
+    print('Using the npz file!')
+    date_in_name=ndfd_file.name.split("_")[2]
+    dt = datetime.datetime.strptime(date_in_name, "%Y%m%d%H%M%S")
+    outfile = outdir.joinpath(f"{dt.strftime('%Y%m%d%H%M%S')}.psv.gz")
+
+    # Load npz file
+    outlook_grids = np.load(ndfd_file)
+    torn = outlook_grids['torn']
+    try:
+        continuous_torn = dc.make_continuous(torn)
+    except ValueError:
+        import sys
+        if torn.max() == 0:
+            with gzip.GzipFile(outfile, "w") as OUT:
+                OUT.write("".encode())
+            sys.exit(0)
+        else:
+            print("There was an uncaught error converting to continuous probabilities. Exiting...")
+            sys.exit(1)
+
+    sigtorn = outlook_grids['sigtorn'].astype(int)
+
+
 sigtorn[sigtorn > 0] = 1
 if (torn.max() >= 30) and (sigtorn.max() > 0):
     sigtorn[torn >= 15] += 1

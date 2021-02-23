@@ -13,7 +13,7 @@ var outlook;
 if (testing) {
     outlook = d3.json('./includes/geo/outlook.geojson');
 } else {
-    outlook = d3.json('./includes/geo/day1otlk_20200318_1630_torn.nolyr.geojson');
+    outlook = d3.json('./includes/geo/day1_torn.geojson');
     //outlook = d3.json('./includes/geo/test.geojson')
 }
 
@@ -50,6 +50,17 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
         'width': width,
         'height': height
     };
+
+    // Update outlook date
+    let validtime = outlooks['features'][0]['properties']['ISSUE']
+
+    let year = validtime.slice(0,4)
+    let mo = validtime.slice(4,6)
+    let day = validtime.slice(6,8)
+    let otime = validtime.slice(8,12)
+    
+    d3.select('#otlk-title').text(`IMPACTS Dashboard (Day 1) // Update: ${mo}/${day}/${year}, ${otime}Z `)
+
 
     var projection = d3.geoAlbersUsa()
         .scale(dims.width/mapWidthScaler)
@@ -429,18 +440,18 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
 })
 
 // Update the outlook time / day on the top row
-d3.csv('./includes/data/init/otlk.txt').then(function(data) {
+// d3.csv('./includes/data/init/otlk.txt').then(function(data) {
    
-    let otime = data.columns[0]
-    let ots = data.columns[1]
-    let ody = data.columns[2]
+//     let otime = data.columns[0]
+//     let ots = data.columns[1]
+//     let ody = data.columns[2]
 
-    let year = ots.slice(0,4)
-    let mo = ots.slice(4,6)
-    let day = ots.slice(6,8)
+//     let year = ots.slice(0,4)
+//     let mo = ots.slice(4,6)
+//     let day = ots.slice(6,8)
     
-    d3.select('#otlk-title').text(`IMPACTS Dashboard (Day 1) // Update: ${mo}/${day}/${year}, ${otime}Z `)
+//     d3.select('#otlk-title').text(`IMPACTS Dashboard (Day 1) // Update: ${mo}/${day}/${year}, ${otime}Z `)
 
-})
+// })
 
 

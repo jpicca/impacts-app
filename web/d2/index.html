@@ -20,6 +20,7 @@
 
 </head>
 
+
 <body>
     <div id='contentwrapper' class='container-fluid'>
 
@@ -32,7 +33,7 @@
             <a class="navbar-brand" href="#">
                 <img src="./includes/imgs/spclogo_trans.png" width="30" alt="">
             </a>
-            <div class="navbar-brand" href="#">IMPACTS Dashboard (Day 2)</div>
+            <div class="navbar-brand" id='otlk-title' href="#">IMPACTS Dashboard (Day 2)</div>
             </div>
             <span class="navbar-text">Storm Prediction Center, Norman OK</span>
         </nav>
@@ -62,11 +63,11 @@
                     <div class="optionbox" id="map-fill">
                         <span class="style5">Impact Map Fill</span><br/>
                         <select id="perc">
-                            <option value="min">Minimum</option>
+                            <!-- <option value="min">Minimum</option> -->
                             <option value="ten">10th Percentile</option>
                             <option value="med" selected>Median</option>
                             <option value="ninety">90th Percentile</option>
-                            <option value="max">Maximum</option>
+                            <!-- <option value="max">Maximum</option> -->
                             <!-- <option value="co">County</option> -->
                         </select>
                     </div>
@@ -115,8 +116,8 @@
                     </div>
                   </li>
                   <li>
-                    <div class="optionbox"><a href='../d1/'>Day 1</a></div>
-                    <b><div class="optionbox">Day 2</div></b>
+                    <b><div class="optionbox"><a href='../d1/'>Day 1</a></div></b>
+                    <div class="optionbox">Day 2</div>
                   </li>
                 </ul>
               </div>
@@ -201,15 +202,15 @@
                     <span>Update Threshold</span>
                 </button>
                 
-                <h4 id='context-jumbo'>
+                <h5 id='context-jumbo'>
                     
-                </h4>
+                </h5>
                 <a href='./info.html'>Model Details</a>
 
                 <hr>
-                <h4>Expected Hail & Damaging Wind LSRs</h4>
-                <span class="lead" data-toggle="tooltip" title="Climo goes here">Hail: 10 Reports</span><br>
-                <span class="lead" data-toggle="tooltip" title="Climo goes here">Wind: 5 Reports</span><br>
+                <h5>Expected Hail & Damaging Wind Reports</h5>
+                <span class="lead" id="exp-hail" data-toggle="tooltip" title="Climo: Select a Valid CWA">Hail: Select a Valid CWA</span><br>
+                <span class="lead" id="exp-wind" data-toggle="tooltip" title="Climo: Select a Valid CWA">Wind: Select a Valid CWA</span><br>
 
                 <a href='./info.html'>Model Details</a>
             </div>

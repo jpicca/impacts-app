@@ -26,9 +26,9 @@
     display: none;
 }
 
-.thosp {
+/* .thosp {
     background-color: rgba(187, 181, 181, 0.3);
-}
+} */
 
 .chart span {
     font-size: 0.75rem;
@@ -36,5 +36,9 @@
 
 table {
     font-size: 0.7rem;
+}
+
+.cell.max, .cell.min {
+    display: none
 }
 
