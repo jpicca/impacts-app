@@ -1,4 +1,10 @@
 scripts/impacts-data/output/*.gz
+data/outlooks-npz/*
+data/outlooks-shp/*
 data/outlooks/impacts.pmarshwx.com/test-grib/*
 web/d1/includes/data/followup/*
+web/d2/includes/data/followup/*
+web/d1/includes/data/archive/*
+web/d2/includes/data/archive/*
+web/.vscode/*
 .DS_Store

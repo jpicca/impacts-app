@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expected Wind/Hail Machine Learning Model</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        #title {
+            size: 2;
+            color: #990000;
+        }
+        #desc, #notes {
+            size: 1;
+        }
+    </style>
+</head>
+<body>
+    <p id='title'><b>Expected Wind/Hail Machine Learning Model</b></p>
+    <p id='desc'>
+        This model predicts the number of damaging wind and severe hail reports to be expected for the valid forecast 
+        period for the chosen CWA. Currently, the model makes predictions for FWD and neighboring CWAs, but will be expanded 
+        and/or updated pending feedback and review.<br><br>
+        A gradient boosting machine-learning model was trained on approximately 30K samples from 2018-20, with features 
+        incorporating the area and population count under various outlook probabilities, as well as the time of year and 
+        the particular CWA. By doing so, the model attempts to account for CWA and population biases in predicting reports.
+        The goal is to provide a proxy for how busy a particular WFO can expect to be.<br><br>
+        By hovering over the predicted total, a pop-up shows how the expected number compares to climatology for that 
+        particular CWA.
+    </p>
+    <p id='notes'><b>Notes:</b> 
+        The model predicts the number of filtered reports (and only for severe hail and damaging wind), 
+        not the number of raw reports.
+    </p>
+</body>
+</html>

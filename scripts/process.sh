@@ -22,19 +22,15 @@ N_SIMS=10000
 
 # either set current date to actual current date (first line) or set current date to custom date
 CURRENT_DATE=`date -u +"%Y%m%d"`
-CUSTOM_YR="2020"
-CUSTOM_MO="04"
-CUSTOM_DY="27"
-CUSTOM_DATE=$CUSTOM_YR$CUSTOM_MO$CUSTOM_DY
 echo "Today's date is... ${CURRENT_DATE}"
 
 # set outlook time
 CURRENT_TIME=`date -u +"%H%M"`
-ISSUE_TIME="0600"
 DAY=$1
 
 # PYTHON SETUP
-PYTHON="/Users/josephpicca/opt/anaconda3/envs/impacts/bin/python"
+PYTHONML="/Users/josephpicca/opt/anaconda3/envs/impacts/bin/python"
+PYTHON="/Users/josephpicca/opt/anaconda3/envs/impacts-prod/bin/python"
 
 # Second python interpreter because the first environment makes the npz processor break
 PYTHON2="/Users/josephpicca/opt/anaconda3/envs/impacts-new/bin/python"
@@ -52,27 +48,59 @@ OUTLOOK_NPZ=$DIR_ROOT"/data/outlooks-npz"
 
 # Testing purposes -- download old outlooks as a test from pmarsh site
 TEST_URL_ROOT="http://impacts.pmarshwx.com/test-grib/"
+SHAPE_URL="https://www.spc.noaa.gov/products/outlook/day"$DAY"otlk-shp.zip"
+
+
+
+
+
+
+## ~~~~~~~~~~~~~~~~~
 
 # ******
 # Download the shapefile for conversion (Use the second line for specific past outlooks)
 # *** Need to change the two following wgets if we use a custom time by commenting out respective first lines and uncommenting second lines ***
 # ******
 
-SHAPE_URL="https://www.spc.noaa.gov/products/outlook/day"$DAY"otlk-shp.zip"
-#wget -O $DIR_ROOT"/data/outlooks-shp/day"$DAY"_shapefile.zip" $SHAPE_URL
-wget -O $DIR_ROOT"/data/outlooks-shp/day"$DAY"_shapefile.zip" "https://www.spc.noaa.gov/products/outlook/archive/"$CUSTOM_YR"/day"$DAY"otlk_"$CUSTOM_DATE"_"$ISSUE_TIME"-shp.zip"
+##########################################
+## ** USE THIS BLOCK FOR CUSTOM DATE ** ##
+##########################################
 
-# Download updated geojson (Use the second line for specific past outlooks)
-#wget -O $DIR_ROOT"/data/geojson/day"$DAY".geojson" "https://www.spc.noaa.gov/products/outlook/day"$DAY"otlk_torn.nolyr.geojson"
-wget -O $DIR_ROOT"/data/geojson/day"$DAY".geojson" "https://www.spc.noaa.gov/products/outlook/archive/2020/day"$DAY"otlk_"$CUSTOM_DATE"_"$ISSUE_TIME"_torn.nolyr.geojson"
+CUSTOM_YR="2021"
+CUSTOM_MO="02"
+CUSTOM_DY="28"
+CUSTOM_DATE=$CUSTOM_YR$CUSTOM_MO$CUSTOM_DY
+ISSUE_TIME="1630"
+
+# Get the shapefile.zip and geojson
+# wget -O $DIR_ROOT"/data/outlooks-shp/day"$DAY"_shapefile.zip" "https://www.spc.noaa.gov/products/outlook/archive/"$CUSTOM_YR"/day"$DAY"otlk_"$CUSTOM_DATE"_"$ISSUE_TIME"-shp.zip"
+# wget -O $DIR_ROOT"/data/geojson/day"$DAY".geojson" "https://www.spc.noaa.gov/products/outlook/archive/"$CUSTOM_YR"/day"$DAY"otlk_"$CUSTOM_DATE"_"$ISSUE_TIME"_torn.nolyr.geojson"
+
+# # Copy the geojson to the web folder for plotting
+# cp $DIR_ROOT"/data/geojson/day"$DAY".geojson" $DIR_ROOT"/web/d"$DAY"/includes/geo/day"$DAY"_torn.geojson"
+
+# echo "*** Running the shapefile to npz script ***"
+# $PYTHON $DIR_ROOT$SCRIPT5 -p $IMPACTS_DATA -d $DAY -c $CUSTOM_DATE"_"$ISSUE_TIME -g
+
+
+###########################################
+## ** USE THIS BLOCK FOR CURRENT DATE ** ##
+###########################################
+
+# Get shapefile.zip and geojson
+/usr/local/bin/wget -O $DIR_ROOT"/data/outlooks-shp/day"$DAY"_shapefile.zip" $SHAPE_URL
+/usr/local/bin/wget -O $DIR_ROOT"/data/geojson/day"$DAY".geojson" "https://www.spc.noaa.gov/products/outlook/day"$DAY"otlk_torn.nolyr.geojson"
+
+# Copy the geojson to the web folder for plotting
 cp $DIR_ROOT"/data/geojson/day"$DAY".geojson" $DIR_ROOT"/web/d"$DAY"/includes/geo/day"$DAY"_torn.geojson"
 
-# ***** End of file downloads *****
-
-# Run the process to make an npz file from the shapefiles of the outlook
 echo "*** Running the shapefile to npz script ***"
-$PYTHON2 $DIR_ROOT$SCRIPT5 -p $IMPACTS_DATA -d $DAY -c $CUSTOM_DATE"_"$ISSUE_TIME -g
-#$PYTHON2 $DIR_ROOT$SCRIPT5 -p $IMPACTS_DATA -d $DAY -g
+$PYTHON $DIR_ROOT$SCRIPT5 -p $IMPACTS_DATA -d $DAY -g
+
+## ~~~~~~~~~~~~~~~~~
+
+
+
 
 # Remove old outlook grib files
 #echo "Removing old files..."
@@ -81,6 +109,10 @@ $PYTHON2 $DIR_ROOT$SCRIPT5 -p $IMPACTS_DATA -d $DAY -c $CUSTOM_DATE"_"$ISSUE_TIM
 
 #echo "Downloading outlook files..."
 #wget -r --no-parent -P $INPUT -A "*_day"$DAY"_*"$CURRENT_DATE"*" $TEST_URL_ROOT
+
+
+
+## ~~~~~~~~~~~~~~~~~
 
 # *** The following section searches for the latest outlook file. Use first line for grib, second line for npz ***
 
@@ -113,8 +145,12 @@ echo $OUTLOOK_TS
 echo "Impacts data source..."
 echo $IMPACTS_DATA
 
-# Copy the init data file (with nat/st/cwa quants to a new file)
-#cp $DIR_ROOT"/web/d1/includes/data/init/data.json" $DIR_ROOT"/web/d1/includes/data/init/data_prev.json"
+
+## ~~~~~~~~~~~~~~~~~
+
+
+
+## ~~~~~~~~~~~~~~~~~
 
 # Run the script that properly formats the prior outlook file (for colored tabular viz on the web page)
 echo "***Formatting previous outlook file. Current outlook is... D${DAY}, ${OUTLOOK_TS}"
@@ -130,8 +166,9 @@ $PYTHON $DIR_ROOT$SCRIPT2 -f $IMPACTS_DATA"/output/"$OUTLOOK_TS".psv.gz" -r $DIR
 
 # Run lsr feature engineering / prediction
 echo "***Extracting and feature processing PAS output for hail/wind prediction..."
-$PYTHON $DIR_ROOT$SCRIPT3 -r $DIR_ROOT -f $filename -i $IMPACTS_DATA"/pas-input-data" -d $DAY
+$PYTHONML $DIR_ROOT$SCRIPT3 -r $DIR_ROOT -f $filename -i $IMPACTS_DATA"/pas-input-data" -d $DAY
 
-echo "!*!*!*!*!*!*! Don't forget to rsync updated data with the real-time directory on the web !*!*!*!*!*!*!"
+#echo "rsync-ing to the remote web server..."
+#rsync -a --delete $DIR_ROOT"/web/" spcsounding@soundingclimo.pmarshwx.com:~/www/impacts.pmarshwx.com/current
 
 

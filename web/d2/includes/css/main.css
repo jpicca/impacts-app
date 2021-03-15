@@ -42,3 +42,8 @@ table {
     display: none
 }
 
+.tor-paths {
+    stroke-width:1;
+    opacity: 0.5;
+}
+

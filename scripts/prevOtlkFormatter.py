@@ -24,14 +24,16 @@ parser.add_argument("-r", "--approot", required=True, help=approot_help)
 args = parser.parse_args()
 
 day = args.otlkday
-time = args.otlktime
+valid_time = args.otlktime
 timestamp = args.timestamp
 filedir_d1 = pathlib.Path(args.approot,'web',f'd1','includes','data')
 filedir_d2 = pathlib.Path(args.approot,'web',f'd2','includes','data')
 
 # The hour buffer allowed for reaching back to grab old outlooks
 tbuf = 2
-cur_otlk_date = datetime.strptime(f'{timestamp[0:8]}-{time}','%Y%m%d-%H%M')
+#cur_otlk_date = datetime.strptime(f'{timestamp[0:8]}-{time}','%Y%m%d-%H%M')
+cur_otlk_date = datetime.strptime(timestamp, '%Y%m%d%H%M%S')
+cur_otlk_time = datetime.strftime(cur_otlk_date,"%H%M")
 
 def getForecastDay(daysBack,fcst):
 
@@ -95,7 +97,7 @@ if (day == '2'):
     d2_date = datetime.strptime(f'{d2_day}-{d2_time}','%Y%m%d-%H%M')
     d2_diff_hr = (cur_otlk_date - d2_date).total_seconds()/3600
     
-    if (time == '0600'):
+    if (int(cur_otlk_time) < 1300):
 
         print('Using empty prev file!')
         # Write out file
@@ -130,7 +132,7 @@ else:
 
     # Go through decision tree on what to do for day 1 outlook times
 
-    if (time == '1200'):
+    if (valid_time == '1200'):
 
         # Check day 2 otlk txt file, if hour diff > 30 hour, use empty prev file
 
@@ -146,7 +148,7 @@ else:
             print('Using old d2 data file for the previous file!')
             shutil.copy(d2_latest,f'{filedir_d1}/init/data_prev.json')
 
-    elif (time == '1300'):
+    elif (valid_time == '1300'):
 
         # Check day 1 otlk txt file, if hour diff > 1 hour, check day 2, if hour diff > 31 hours, use empty
 
@@ -169,7 +171,7 @@ else:
             print('Using old d1 data file for the previous file!')
             shutil.copy(d1_latest,f'{filedir_d1}/init/data_prev.json')
 
-    elif (time == '1630'):
+    elif (valid_time == '1630'):
 
         # Check day 1 otlk txt file, if hour diff > 4.5 hour, check day 2, if hour diff > 34.5, use empty
 
@@ -190,7 +192,7 @@ else:
             print('Using old d1 data file for the previous file!')
             shutil.copy(d1_latest,f'{filedir_d1}/init/data_prev.json')
 
-    elif (time == '2000'):
+    elif (valid_time == '2000'):
 
         # Check day 1 otlk txt file, if hour diff > 8 hours, check day 2, if hour diff > 38
 

@@ -156,8 +156,8 @@ single_sig_inds = sigtorn_1d[inds] == 1
 double_sig_inds = sigtorn_1d[inds] == 2
 
 if usesig:
-        single_sig_inds += non_sig_inds
-        non_sig_inds[:] = False
+    single_sig_inds += non_sig_inds
+    non_sig_inds[:] = False
         
 # Handle Locations
 non_sig_loc_inds = inds[non_sig_inds]
@@ -203,7 +203,6 @@ simulated_tornadoes = dc.flatten_list([non_sig, single_sig, double_sig])
 np.random.shuffle(simulated_tornadoes)
 _sims = np.split(simulated_tornadoes, counts.sum(axis=0).cumsum())[:-1]
 realizations = dc.Realizations([dc.SyntheticTornadoRealization(_sim, i+1) for i, _sim in enumerate(_sims)])
-
 
 #print("Writing Out gzipped PSV file...")
 with gzip.GzipFile(outfile, "w") as OUT:
