@@ -98,6 +98,9 @@ export function tablePopulate(entry,prev,attr='title') {
             .style('background-color',diffColorDict['pow']['med'](0))
             .style('color','black')
             .text(0)
+
+        // remove the tor data title (so it doesn't say 'no simulated tors' permanently)
+        d3.selectAll('.ttor.dat').attr('data-original-title',null)
             
         // Make sure the tornado background color remains white, though
         d3.selectAll('.cell.ttor')

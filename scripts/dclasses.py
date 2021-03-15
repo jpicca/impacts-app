@@ -60,7 +60,8 @@ class ImpactGrids(object):
         with np.load(impacts_grids_file) as NPZ:
             self.population = NPZ["population"]
             self.proj = pyproj.Proj(NPZ["srs"].item())
-            self.geod = pyproj.Geod(NPZ["srs"].item())
+            self.geod = pyproj.Geod(f'{self.proj} +a=6371200 +b=6371200')
+            #self.geod = pyproj.Geod(NPZ["srs"].item())
             #self.geod = pyproj.Geod(self.proj.srs)
             self.lons = NPZ["lons"]
             self.lats = NPZ["lats"]
@@ -237,6 +238,8 @@ def weighted_choice(prob, probs, cprobs, size):
         weights[probs < prob] = np.ma.masked
     elif prob <= 2:
         weights[probs > prob] = np.ma.masked
+        ## Edit to mask probs == 0
+        weights[probs == 0] = np.ma.masked
     else:
         weights[probs != prob] = np.ma.masked
     cumulative_weights = weights.cumsum()

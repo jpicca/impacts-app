@@ -157,19 +157,28 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
                 if (d.properties.LABEL != 'SIGN') {
                     return 1;
                 } else {
-                    return 2;
+                    return 1;
                 }
             } )
             .attr('stroke', d => {
-                if (d.properties.LABEL != 'SIGN') {
-                    return d.properties.stroke;
-                } else {
-                    return '#FFFFFF'
-                }
+                return d.properties.stroke;
+                // if (d.properties.LABEL != 'SIGN') {
+                //     return d.properties.stroke;
+                // } else {
+                //     return '#FFFFFF'
+                // }
             })
             .attr('fill', d => {
                 if (d.properties.LABEL != 'SIGN') {
                     return d.properties.fill;
+                } 
+                // else {
+                //     return '#FFFFFF';
+                // }
+            })
+            .attr('stroke-dasharray', d => {
+                if (d.properties.LABEL == 'SIGN') {
+                    return 2;
                 } 
             })
     }
@@ -330,7 +339,8 @@ Promise.all([d3.json('./includes/geo/counties-10m-edit.json'),
         .attr('d',path)
         .attr("class", d => `${d.percentile} ${d.impact}`)
         .classed('tor-paths nat',true)
-        .attr('stroke-width',0.5)
+        .attr('stroke-width',1)
+        .attr('opacity',0.5)
         .attr('stroke','#000')
         .attr('visibility','hidden')
         .attr('stroke-linecap','round')

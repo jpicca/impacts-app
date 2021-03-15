@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistical Tornado Model Information</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        #title {
+            size: 2;
+            color: #990000;
+        }
+        #desc, #notes, #further {
+            size: 1;
+        }
+    </style>
+</head>
+<body>
+    <p id='title'><b>Statistical Tornado Model Information</b></p>
+    <p id='desc'>
+        The tornado and related impact data are generated via a statistical model that utilizes historical
+        distributions to simulate tornadoes and their possible impacts. The model uses the SPC probabilistic 
+        tornado forecast (on a grid spacing of 5 km) as input. Using the statistical properties of tornado ratings 
+        and path lengths within various SPC outlook categories, the model runs 10K simulations of the valid forecast period,
+        randomly generating tornadoes with ratings and path lengths. These tornado paths are then overlaid on gridded 
+        infrastructure data to estimate potential exposure in each simulation. From the 10K
+        simulations, tornado and impact distributions are generated.
+    </p>
+    <p id='notes'><b>Notes:</b> 
+        Direction of movement is randomly generated from a normal distribution centered on 230deg. This is sub-optimal, 
+        of course, and future efforts are geared towards developing methods to more accurately represent potential 
+        tornado motion for individual events. Another focus of future work is the development of timing information for 
+        each tornado.
+    </p>
+    <p id='further'>For further info: <a href='https://ams.confex.com/ams/98Annual/webprogram/Paper335889.html' target='_blank'>
+    Marsh et al     2018 AMS Presentation</a></p>
+</body>
+</html>

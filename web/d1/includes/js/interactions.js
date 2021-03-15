@@ -152,8 +152,11 @@ export function interact(torPaths,path,preds) {
             })
 
         } else {
-            hailcell.text('No Predicted Reports and/or CWA/State not included at this time.')
-            windcell.text('No Predicted Reports and/or CWA/State not included at this time.')
+            hailcell.text('No Predicted Reports and/or CWA/State not included at this time.');
+            windcell.text('No Predicted Reports and/or CWA/State not included at this time.');
+
+            hailcell.attr('data-original-title',null);
+            windcell.attr('data-original-title',null);
         }
 
         
@@ -190,17 +193,15 @@ export function interact(torPaths,path,preds) {
                         // Update the table values
                         this.updateTable('cwas')
 
-
-
                         // Control what menu is shown
                         d3.select('#state-choice').style('display','none')
                         d3.select('#cwa-choice').style('display','block')
 
+                        d3.selectAll('.st')
+                            .style('visibility','hidden')
+
                         // Control what map shows
                         if (isChecked) {
-                            
-                            d3.selectAll('.st')
-                                .style('visibility','hidden')
 
                             d3.selectAll('.cwa')
                                 .style('visibility','visible')
@@ -550,6 +551,9 @@ export function interact(torPaths,path,preds) {
         containers.select('h4').remove();
 
         if (nat) {
+
+            // Remove the old svg
+            containers.select('svg').remove();
 
             var h = [], m = [], pop = [], pow = [];
 

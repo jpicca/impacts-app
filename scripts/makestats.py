@@ -149,6 +149,12 @@ except pd.errors.EmptyDataError:
     with open(f'{outdir}/d{otlk_day}/includes/data/init/data.json', 'w') as fp:
         json.dump(masterDict, fp)
 
+    # Write master json to archive
+    valid, ts = getValidDay(f)
+
+    with open(f'{outdir}/d{otlk_day}/includes/data/archive/data_v{valid}_{ts}.json', 'w') as fp:
+        json.dump(masterDict, fp)
+
     sys.exit(0)
 
 
@@ -356,6 +362,5 @@ with open(f'{outdir}/d{otlk_day}/includes/data/init/data.json', 'w') as fp:
 
 # Write master json to archive
 valid, ts = getValidDay(f)
-
 with open(f'{outdir}/d{otlk_day}/includes/data/archive/data_v{valid}_{ts}.json', 'w') as fp:
     json.dump(masterDict, fp)
