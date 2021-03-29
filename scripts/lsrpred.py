@@ -208,8 +208,10 @@ uf_df = pd.DataFrame.from_dict(uf.__dict__)
 proc_feats = processFeatures(uf_df)
 
 # Load models and make predictions for CWAs
-hail_model = load(pathlib.Path(app_root,'scripts','models','FWD_CWA_hailLSR_gbr.joblib'))
-wind_model = load(pathlib.Path(app_root,'scripts','models','FWD_CWA_windLSR_gbr.joblib'))
+#hail_model = load(pathlib.Path(app_root,'scripts','models','FWD_CWA_hailLSR_gbr.joblib'))
+#wind_model = load(pathlib.Path(app_root,'scripts','models','FWD_CWA_windLSR_gbr.joblib'))
+hail_model = load(pathlib.Path(app_root,'scripts','models','hailLSR_gbr_v2.joblib'))
+wind_model = load(pathlib.Path(app_root,'scripts','models','windLSR_gbr_v2.joblib'))
 
 # Get initial predictions
 lsr_preds = zip(cwas,makePredictions(proc_feats,hail_model),makePredictions(proc_feats,wind_model))

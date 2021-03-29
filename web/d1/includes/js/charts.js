@@ -23,7 +23,7 @@ export function quantFormatter(data,quant=0.9,isMob=false) {
     } else if (max_adj > quant_adj) {
         return data.filter(val => val < max_adj)
     } else {
-        return data.filter(val => val < quant_adj)
+        return data.filter(val => val < quant_adj - 1)
     }
 
 }

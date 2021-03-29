@@ -33,10 +33,11 @@ class TornadoDistributions(object):
         self.f30 = stats.exponweib(13.12425, 0.50321, loc=0, scale=1.73468e-5)
 
         # Tornado Rating Distributions
-        self.r_notorn = np.array([0.764045, 0.196629, 0.033708, 0.005618, 0, 0])
         self.r_nonsig = np.array([0.653056, 0.269221, 0.058293, 0.016052, 0.003378, 0])
         self.r_singlesig = np.array([0.460559, 0.381954, 0.119476, 0.031184, 0.006273, 0.000554])
         self.r_doublesig = np.array([0.3003, 0.363363, 0.168168, 0.09009, 0.063063, 0.015016])
+        
+        self.r_notorn = np.array([0.764045, 0.196629, 0.033708, 0.005618, 0, 0])
         # Experimental Triple Sig using rating dists from 27apr2011,11apr1965,3apr1974,
         # 31may1985,3may1999
         self.r_triplesig = np.array([0.187347, 0.250486, 0.170708, 0.167871, 0.193852, 0.029736])

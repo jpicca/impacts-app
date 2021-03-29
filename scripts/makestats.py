@@ -43,6 +43,9 @@ oldfiles = glob.glob(f'{outdir}/d{otlk_day}/includes/data/followup/*')
 for file in oldfiles:
     os.remove(file)
 
+# Remove the init tornado file
+init_tor_file = f'{outdir}/d{otlk_day}/includes/data/init/ind_tors.json'
+
 # Load saved climo data
 with open(f'{climo}/pop_climo_torSmAvg.json') as file:
     pop_data = json.load(file)
@@ -154,6 +157,22 @@ except pd.errors.EmptyDataError:
 
     with open(f'{outdir}/d{otlk_day}/includes/data/archive/data_v{valid}_{ts}.json', 'w') as fp:
         json.dump(masterDict, fp)
+
+    # Need to write an empty tor file json
+    empty_tors = {}
+
+    for impact in ['population','hospitals','mobilehomes','psubstations']:
+        empty_tors[impact] = {
+            'min':[],
+            'ten':[],
+            'med':[],
+            'ninety':[],
+            'max':[]
+        }
+
+    # Write out tornado json data
+    with open(f'{outdir}/d{otlk_day}/includes/data/init/ind_tors.json', 'w') as fp:
+        json.dump(empty_tors, fp)
 
     sys.exit(0)
 
