@@ -27,6 +27,7 @@ echo "Today's date is... ${CURRENT_DATE}"
 # set outlook time
 CURRENT_TIME=`date -u +"%H%M"`
 DAY=$1
+GRIB=$2
 
 # PYTHON SETUP
 PYTHONML="/Users/josephpicca/opt/anaconda3/envs/impacts/bin/python"
@@ -102,16 +103,6 @@ $PYTHON $DIR_ROOT$SCRIPT5 -p $IMPACTS_DATA -d $DAY -g
 
 
 
-# Remove old outlook grib files
-#echo "Removing old files..."
-#rm -r $OUTLOOK_DIR
-#ls $OUTLOOK_DIR"/*"
-
-#echo "Downloading outlook files..."
-#wget -r --no-parent -P $INPUT -A "*_day"$DAY"_*"$CURRENT_DATE"*" $TEST_URL_ROOT
-
-
-
 ## ~~~~~~~~~~~~~~~~~
 
 # *** The following section searches for the latest outlook file. Use first line for grib, second line for npz ***
@@ -158,7 +149,7 @@ $PYTHON $DIR_ROOT$SCRIPT4 -d $DAY -t $OUTLOOK_TIME -ts $OUTLOOK_TS -r $DIR_ROOT
 
 # Run PAS
 echo "***Running PAS script on grib files"
-$PYTHON $DIR_ROOT$SCRIPT -f $D_TOR -n $N_SIMS -p $IMPACTS_DATA -ig 0
+$PYTHON $DIR_ROOT$SCRIPT -f $D_TOR -n $N_SIMS -p $IMPACTS_DATA -ig $GRIB
 
 # Run the stat maker
 echo "***Post processing PAS output for web viz tornado stats..."
