@@ -36,7 +36,7 @@ class TornadoDistributions(object):
         self.r_nonsig = np.array([0.653056, 0.269221, 0.058293, 0.016052, 0.003378, 0])
         self.r_singlesig = np.array([0.460559, 0.381954, 0.119476, 0.031184, 0.006273, 0.000554])
         self.r_doublesig = np.array([0.3003, 0.363363, 0.168168, 0.09009, 0.063063, 0.015016])
-        
+
         self.r_notorn = np.array([0.764045, 0.196629, 0.033708, 0.005618, 0, 0])
         # Experimental Triple Sig using rating dists from 27apr2011,11apr1965,3apr1974,
         # 31may1985,3may1999
@@ -239,8 +239,10 @@ def weighted_choice(prob, probs, cprobs, size):
         weights[probs < prob] = np.ma.masked
     elif prob <= 2:
         weights[probs > prob] = np.ma.masked
-        ## Edit to mask probs == 0
-        weights[probs == 0] = np.ma.masked
+        # Edit to mask probs == 0
+        # Edited again to adjust to <= 0 [grib files have -1, so == did not filter these out, and it *appears* to be
+        # the source of our gridding issues.]
+        weights[probs <= 0] = np.ma.masked
     else:
         weights[probs != prob] = np.ma.masked
     cumulative_weights = weights.cumsum()
